@@ -3,8 +3,8 @@ kind: Naisjob
 metadata:
   labels:
     team: klage
-    e2e: kabin
-  name: kabin-e2e-tests-{{jobid}}
+    e2e: klang
+  name: klang-e2e-tests-{{jobid}}
   namespace: klage
 spec:
   backoffLimit: 0
@@ -17,10 +17,9 @@ spec:
       memory: 8Gi  
   image: {{image}}
   envFrom:
-  - secret: kabin-e2e-test-users
   - secret: slack-e2e-secrets
   - configmap: slack-e2e-configmap
   accessPolicy:
     outbound:
       external:
-      - host: kabin.intern.dev.nav.no
+      - host: klage.intern.dev.nav.no

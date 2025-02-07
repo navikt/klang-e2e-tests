@@ -28,7 +28,7 @@ runs:
     - name: Checkout E2E
       uses: actions/checkout@v4
       with:
-        repository: navikt/kabin-e2e-tests
+        repository: navikt/klang-e2e-tests
 
     - name: Get image registry
       id: image-registry
@@ -58,7 +58,7 @@ runs:
     - name: Generate image name
       id: image
       shell: bash
-      run: echo "image=${{ steps.image-registry.outputs.registry }}/kabin-e2e-tests:${{ steps.image-tag.outputs.tag }}" >> $GITHUB_OUTPUT
+      run: echo "image=${{ steps.image-registry.outputs.registry }}/klang-e2e-tests:${{ steps.image-tag.outputs.tag }}" >> $GITHUB_OUTPUT
 
     - name: Run E2E tests
       uses: nais/deploy/actions/deploy@v2

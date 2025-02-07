@@ -4,8 +4,8 @@ import { App, isCodedError } from '@slack/bolt';
 import type { ChatPostMessageResponse, ChatUpdateResponse } from '@slack/web-api';
 import { IS_DEPLOYED, envString, requiredEnvString } from '../config/env';
 
-const BOT_NAME = 'Kabin E2E';
-const ICON_URL = 'https://raw.githubusercontent.com/navikt/kabin/main/frontend/assets/android-chrome-192x192.png';
+const BOT_NAME = 'Klang E2E';
+const ICON_URL = 'https://raw.githubusercontent.com/navikt/klang/main/frontend/assets/logo192.png';
 
 class SlackClient {
   private app: App;

@@ -1,25 +1,24 @@
 {
-  "name": "kabin-e2e-tests",
+  "name": "klang-e2e-tests",
   "version": "1.0.0",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "test": "playwright test",
-    "dev": "NODE_ENV=test playwright test --headed --retries 0 --workers 1",
-    "local": "playwright test --headed --retries 0 --workers 1",
+    "dev": "playwright test -c playwright.config.dev.ts",
+    "local": "TEST_ENV=local bun run dev",
     "lint": "biome check",
-    "tsc": "tsc"
+    "typecheck": "tsc"
   },
   "dependencies": {
-    "@playwright/test": "^1.50.1",
     "@slack/bolt": "^4.2.0",
-    "date-fns": "^4.1.0",
     "playwright": "^1.50.1"
   },
   "devDependencies": {
-    "@types/node": "^22.13.1",
-    "@types/node-fetch": "^2.6.12",
+    "@biomejs/biome": "^1.9.4",
+    "@playwright/test": "^1.50.1",
+    "@types/node": "^22.13.4",
     "dotenv": "^16.4.7",
     "typescript": "^5.7.3"
   }

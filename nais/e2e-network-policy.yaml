@@ -4,9 +4,9 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   labels:
-    app: kabin-e2e-tests
+    app: klang-e2e-tests
     team: klage
-  name: kabin-e2e-tests
+  name: klang-e2e-tests
   namespace: klage
 spec:
   egress:
@@ -30,7 +30,7 @@ spec:
               app: prometheus
   podSelector:
     matchLabels:
-      e2e: kabin
+      e2e: klang
   policyTypes:
     - Ingress
     - Egress

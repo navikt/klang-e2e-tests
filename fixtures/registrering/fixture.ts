@@ -1,36 +1,18 @@
 import { test as base } from '@playwright/test';
-import { AnkePage } from './anke-page';
-import { KabinPage } from './kabin-page';
-import { KlagePage } from './klage-page';
-import { OmgjøringskravPage } from './omgjøringskrav-page';
-import { StatusPage } from './status-page';
+import { KlangPage } from './klang-page';
+import { LoginPage } from './login-page';
 
 interface Pages {
-  kabinPage: KabinPage;
-  klagePage: KlagePage;
-  ankePage: AnkePage;
-  omgjøringskravPage: OmgjøringskravPage;
-  statusPage: StatusPage;
+  klangPage: KlangPage;
+  loginPage: LoginPage;
 }
 
 export const test = base.extend<Pages>({
-  kabinPage: async ({ page }, use) => {
-    await use(new KabinPage(page));
+  klangPage: async ({ page, context }, use) => {
+    await use(new KlangPage(page, context));
   },
 
-  klagePage: async ({ page }, use) => {
-    await use(new KlagePage(page));
-  },
-
-  ankePage: async ({ page }, use) => {
-    await use(new AnkePage(page));
-  },
-
-  omgjøringskravPage: async ({ page }, use) => {
-    await use(new OmgjøringskravPage(page));
-  },
-
-  statusPage: async ({ page }, use) => {
-    await use(new StatusPage(page));
+  loginPage: async ({ page }, use) => {
+    await use(new LoginPage(page));
   },
 });

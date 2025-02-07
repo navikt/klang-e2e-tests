@@ -32,6 +32,12 @@
         "noConsole": { "level": "off", "options": { "allow": ["debug", "info", "warn", "error"] } },
         "noReactSpecificProps": { "level": "off" },
         "noEmptyBlockStatements": { "level": "off" }
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": { "level": "warn", "options": { "maxAllowedComplexity": 30 } }
+      },
+      "performance": {
+        "useTopLevelRegex": { "level": "off" }
       }
     }
   },
@@ -41,6 +47,6 @@
     "linter": { "enabled": true }
   },
   "files": {
-    "ignore": ["dist/**"]
+    "ignore": ["test-results/**"]
   }
 }

@@ -1,23 +1,21 @@
-import { type Page, type ViewportSize, chromium } from '@playwright/test';
+import { chromium } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import type { FullConfig } from '@playwright/test/reporter';
-import { DEV_DOMAIN, USE_DEV } from '../tests/functions';
-import { getLoggedInPage } from '../tests/helpers';
-import { userSaksbehandler } from '../tests/test-data';
-
-export const SCREEN_SIZE: ViewportSize = { width: 2560, height: 2000 };
+import { DEV_DOMAIN } from '../config/env';
+import { USE_LOCAL } from '../config/env';
+import { logIn, verifyLogin } from '../fixtures/registrering/login-page';
+import { testUser } from '../testdata/user';
 
 const globalSetup = async (config: FullConfig) => {
   const { storageState } = config.projects[0].use;
   const browser = await chromium.launch();
-  const page = await browser.newPage({
-    viewport: SCREEN_SIZE,
-    screen: SCREEN_SIZE,
-  });
+  const page = await browser.newPage();
 
-  await getLoggedInPage(page, userSaksbehandler);
+  await logIn(page, testUser.id, 'nb/klage/alderspensjon/begrunnelse');
+  await verifyLogin(page, testUser);
 
   if (typeof storageState === 'string') {
-    if (!USE_DEV) {
+    if (USE_LOCAL) {
       await setLocalhostCookie(page);
     }
 

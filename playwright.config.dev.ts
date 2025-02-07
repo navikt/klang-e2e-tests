@@ -1,6 +1,6 @@
 import { defineConfig } from 'playwright/test';
 
-// biome-ignore lint/style/noDefaultExport: https://playwright.dev/docs/test-configuration
+// biome-ignore lint/style/noDefaultExport: https://playwright.dev/docs/test-configuration#basic-configuration
 export default defineConfig({
   name: 'Klang',
   testDir: './tests',
@@ -8,15 +8,12 @@ export default defineConfig({
   globalTimeout: 360_000,
   globalSetup: require.resolve('./setup/global-setup'),
 
-  outputDir: '/tmp/test-results',
-  reporter: [['list'], ['./reporters/slack-reporter.ts']],
-  retries: 1,
+  maxFailures: 1,
 
   use: {
-    actionTimeout: 5_000,
+    headless: false,
+    actionTimeout: 10_000,
     navigationTimeout: 15_000,
-    video: 'on',
-    screenshot: 'on',
     trace: 'on',
     locale: 'no-NB',
     storageState: '/tmp/state.json',

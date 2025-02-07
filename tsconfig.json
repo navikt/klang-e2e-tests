@@ -13,7 +13,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": false,
     "isolatedModules": true,
-    "noEmit": false,
+    "noEmit": true,
     "rootDir": "./",
     "outDir": "./dist"
   },
