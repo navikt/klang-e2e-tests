@@ -1,0 +1,21 @@
+{
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run E2E tests (headed)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--inspect-brk=9229"],
+      "port": 9229,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run E2E tests",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "test"],
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}

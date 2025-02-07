@@ -1,0 +1,7 @@
+.github/
+.vscode/
+nais/
+test-results/
+.editorconfig
+.gitignore
+*.md

@@ -1,0 +1,36 @@
+# NetworkPolicy applied in dev-gcp
+# kubectl apply -f e2e-network-policy.yaml -n klage
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app: kabin-e2e-tests
+    team: klage
+  name: kabin-e2e-tests
+  namespace: klage
+spec:
+  egress:
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: nais
+          podSelector:
+            matchLabels:
+              app: prometheus
+  podSelector:
+    matchLabels:
+      e2e: kabin
+  policyTypes:
+    - Ingress
+    - Egress

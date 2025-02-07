@@ -1,0 +1,46 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "organizeImports": { "enabled": true },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "all": true,
+      "nursery": {
+        "all": true,
+        "useImportRestrictions": { "level": "off" },
+        "noSecrets": { "level": "off", "options": {} },
+        "useComponentExportOnlyModules": { "level": "off", "options": {} },
+        "noEnum": { "level": "off" },
+        "useExplicitType": { "level": "off" },
+        "useConsistentMemberAccessibility": { "level": "off", "options": {} },
+        "useConsistentCurlyBraces": { "level": "off", "fix": "none" },
+        "noProcessEnv": { "level": "off" }
+      },
+      "correctness": {
+        "noUndeclaredDependencies": { "level": "off" },
+        "useImportExtensions": { "level": "off", "fix": "none", "options": {} },
+        "noUndeclaredVariables": { "level": "off" },
+        "noNodejsModules": { "level": "off" }
+      },
+      "style": {
+        "noImplicitBoolean": { "level": "off", "fix": "none" },
+        "useDefaultSwitchClause": { "level": "off" },
+        "useNamingConvention": { "level": "off", "fix": "none", "options": {} },
+        "noParameterProperties": { "level": "off" }
+      },
+      "suspicious": {
+        "noConsole": { "level": "off", "options": { "allow": ["debug", "info", "warn", "error"] } },
+        "noReactSpecificProps": { "level": "off" },
+        "noEmptyBlockStatements": { "level": "off" }
+      }
+    }
+  },
+  "formatter": { "lineWidth": 120, "indentStyle": "space" },
+  "javascript": {
+    "formatter": { "quoteStyle": "single", "arrowParentheses": "always", "bracketSameLine": false },
+    "linter": { "enabled": true }
+  },
+  "files": {
+    "ignore": ["dist/**"]
+  }
+}

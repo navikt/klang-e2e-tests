@@ -1,0 +1,94 @@
+name: Build and run
+
+on:
+  workflow_dispatch:
+    inputs:
+      run-tests:
+        description: 'Run after build?'
+        required: true
+        default: true
+        type: boolean
+  workflow_call:
+    inputs:
+      run-tests:
+        description: 'Run after build?'
+        required: true
+        default: false
+        type: boolean
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build E2E image (${{ github.ref_name }})
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Get image tag
+        id: image-tag
+        shell: bash
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and publish image
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
+        with:
+          team: klage # required
+          tag: ${{ steps.image-tag.outputs.tag }} # optional
+          push_image: true # optional, default true
+          dockerfile: Dockerfile # optional, default Dockerfile
+          docker_context: . # optional, default .
+          image_suffix: # optional, default empty
+          cache_from: type=gha # optional, default type=gha
+          cache_to: type=gha,mode=max # optional, default type=gha,mode=max
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }} # required, but is defined as an organization secret
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # required, but is defined as an organization variable
+          build_args: |
+            CI=true
+  
+  e2e_tests:
+    name: Run E2E tests (${{ github.ref_name }})
+    needs: build
+    if: ${{ inputs.run-tests || github.event_name == 'push' }}
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate UUID
+        id: uuid
+        shell: bash
+        run: echo "uuid=$(uuidgen)" >> $GITHUB_OUTPUT
+
+      - name: Run E2E tests
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          VAR: jobid=${{ steps.uuid.outputs.uuid }},image=${{ needs.build.outputs.image }}
+          TEAM: klage
+          RESOURCE: nais/e2e-job.yaml
+          IMAGE: ${{ needs.build.outputs.image }}
