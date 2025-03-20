@@ -11,7 +11,7 @@ export default defineConfig({
   maxFailures: 1,
 
   use: {
-    headless: false,
+    headless: true,
     actionTimeout: 10_000,
     navigationTimeout: 15_000,
     trace: 'on',
