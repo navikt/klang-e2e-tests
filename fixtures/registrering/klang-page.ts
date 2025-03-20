@@ -17,18 +17,21 @@ export class KlangPage {
   #idNumber = '';
   #firstName = '';
   #lastName = '';
-  #saksnummer = '';
   #vedtaksdato = '';
+  #userSaksnummer = '';
   #begrunnelse = '';
   #skalSendeMedVedlegg = false;
   #hasUploadedAttachments = false;
+
+  #internalSaksnummer: string | null = null;
+  #sakFagsystem: string | null = null;
+  #sakSakstype: string | null = null;
+  #harMottattBrev: boolean | null = null;
 
   #avslagChecked: boolean | null = null;
   #utbetaltChecked: boolean | null = null;
   #uenigChecked: boolean | null = null;
   #tilbakebetalingChecked: boolean | null = null;
-
-  #harMottattBrev: boolean | null = null;
 
   constructor(
     private page: Page,
@@ -38,45 +41,91 @@ export class KlangPage {
     this.#type = null;
   }
 
-  async createCase(type: Type, ytelse: Innsendingsytelse, saksnummer = '') {
+  setDeepLinkParams(internalSaksnummer: string, sakSakstype: string, sakFagsystem: string, harMottattBrev: boolean) {
+    this.#internalSaksnummer = internalSaksnummer;
+    this.#sakSakstype = sakSakstype;
+    this.#sakFagsystem = sakFagsystem;
+    this.#harMottattBrev = harMottattBrev;
+
+    const params = toQueryParams({
+      saksnummer: internalSaksnummer,
+      sakstype: sakSakstype,
+      fagsystem: sakFagsystem,
+      ka: harMottattBrev,
+    });
+
+    if (this.#type === 'klageettersendelse') {
+      return this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/klage/${this.#ytelse}?${params}`);
+    }
+
+    if (this.#type === 'ankeettersendelse') {
+      return this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/anke/${this.#ytelse}?${params}`);
+    }
+
+    return this.page.goto(`${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}?${params}`);
+  }
+
+  async createCase(
+    type: Type,
+    ytelse: Innsendingsytelse,
+    saksnummer: string | null = null,
+    sakSakstype: string | null = null,
+    sakFagsystem: string | null = null,
+    ka: boolean | null = null,
+  ) {
     this.#ytelse = ytelse;
     this.#type = type;
-    this.#saksnummer = saksnummer;
+    this.#internalSaksnummer = saksnummer;
+    this.#sakFagsystem = sakFagsystem;
+    this.#sakSakstype = sakSakstype;
+    this.#harMottattBrev = ka;
 
-    const saksnummerParam = saksnummer.length > 0 ? `?saksnummer=${saksnummer}` : '';
+    const params = toQueryParams({ saksnummer, sakstype: sakSakstype, fagsystem: sakFagsystem, ka: ka });
 
     if (type === 'klageettersendelse') {
-      await this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/klage/${this.#ytelse}${saksnummerParam}`);
+      await this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/klage/${this.#ytelse}?${params}`);
       await this.page.waitForURL(`${UI_DOMAIN}/nb/ettersendelse/klage/${this.#ytelse}/begrunnelse`);
 
       return;
     }
 
     if (type === 'ankeettersendelse') {
-      await this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/anke/${this.#ytelse}${saksnummerParam}`);
+      await this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/anke/${this.#ytelse}?${params}`);
       await this.page.waitForURL(`${UI_DOMAIN}/nb/ettersendelse/anke/${this.#ytelse}/begrunnelse`);
 
       return;
     }
 
-    await this.page.goto(`${UI_DOMAIN}/nb/${type}/${this.#ytelse}${saksnummerParam}`);
+    await this.page.goto(`${UI_DOMAIN}/nb/${type}/${this.#ytelse}?${params}`);
     await this.page.waitForURL(`${UI_DOMAIN}/nb/${type}/${this.#ytelse}/begrunnelse`);
   }
 
-  async createLoggedInCase(type: Type, ytelse: Innsendingsytelse, saksnummer = '', ka: boolean | null = null) {
+  async createLoggedInCase(
+    type: Type,
+    ytelse: Innsendingsytelse,
+    saksnummer: string | null = null,
+    sakSakstype: string | null = null,
+    sakFagsystem: string | null = null,
+    harMottattBrev: boolean | null = null,
+  ) {
     this.#type = type;
     this.#ytelse = ytelse;
-    this.#saksnummer = saksnummer;
-    this.#harMottattBrev = ka;
+    this.#internalSaksnummer = saksnummer;
+    this.#sakFagsystem = sakFagsystem;
+    this.#sakSakstype = sakSakstype;
+    this.#harMottattBrev = harMottattBrev;
     this.#loggedIn = true;
 
     await this.#ensureNewLoggedInCase();
   }
 
   async #ensureNewLoggedInCase() {
-    const saksnummerParam = this.#saksnummer.length > 0 ? `saksnummer=${this.#saksnummer}&` : '';
-    const kaParam = this.#harMottattBrev === true ? 'ka=true' : '';
-    const params = `?${saksnummerParam}${kaParam}`;
+    const params = toQueryParams({
+      saksnummer: this.#internalSaksnummer,
+      sakstype: this.#sakSakstype,
+      fagsystem: this.#sakFagsystem,
+      ka: this.#harMottattBrev,
+    });
 
     await this.#createLoggedInCase(params);
     await this.deleteCase();
@@ -85,14 +134,18 @@ export class KlangPage {
 
   async #createLoggedInCase(params: string) {
     if (this.#type === 'klageettersendelse') {
-      await this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/klage/${this.#ytelse}${params}`);
+      await this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/klage/${this.#ytelse}?${params}`);
     } else if (this.#type === 'ankeettersendelse') {
-      await this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/anke/${this.#ytelse}${params}`);
+      await this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/anke/${this.#ytelse}?${params}`);
     } else {
-      await this.page.goto(`${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}${params}`);
+      await this.page.goto(`${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}?${params}`);
     }
 
     await this.page.waitForURL(`${UI_DOMAIN}/nb/sak/**/begrunnelse`);
+  }
+
+  setLoggedIn(loggedIn: boolean) {
+    this.#loggedIn = loggedIn;
   }
 
   insertIdNumber(idNumber: string) {
@@ -111,7 +164,7 @@ export class KlangPage {
   }
 
   async insertSaksnummer(saksnummer: string) {
-    this.#saksnummer = saksnummer;
+    this.#userSaksnummer = saksnummer;
 
     const apiUrl = '**/api/klanker/**/usersaksnummer';
 
@@ -355,7 +408,13 @@ export class KlangPage {
       await expect(this.page.getByText(this.#firstName)).toBeVisible();
       await expect(this.page.getByText(this.#lastName)).toBeVisible();
     }
-    await expect(this.page.getByText(this.#saksnummer)).toBeVisible();
+
+    if (this.#internalSaksnummer !== null) {
+      await expect(this.page.getByText(this.#internalSaksnummer)).toBeVisible();
+    } else {
+      await expect(this.page.getByText(this.#userSaksnummer)).toBeVisible();
+    }
+
     await expect(this.page.getByText(this.#vedtaksdato)).toBeVisible();
     await expect(this.page.getByText(this.#begrunnelse)).toBeVisible();
 
@@ -383,25 +442,15 @@ export class KlangPage {
     }
   }
 
-  verifyFerdigUtfyltSaksnummer() {
-    const label = this.page.locator('label').filter({ hasText: 'Saksnummer' });
-    const container = this.page.locator('div').filter({ has: label });
-
-    expect(container.getByText(this.#saksnummer)).toBeVisible();
-  }
-
-  async changeFerdigUtfyltSaksnummer(newSaksnummer: string) {
-    const label = this.page.locator('label').filter({ hasText: 'Saksnummer' });
-    const container = this.page.locator('div').filter({ has: label });
-    await container.getByTitle('Endre').click();
-
-    await this.insertSaksnummer(newSaksnummer);
-    await this.page.locator('label').filter({ hasText: 'Saksnummer (valgfri)' }).waitFor();
-    await this.verifySaksnummer();
-  }
-
   async verifySaksnummer() {
-    expect(await this.page.getByLabel('Saksnummer (valgfri)').inputValue()).toBe(this.#saksnummer);
+    if (this.#internalSaksnummer !== null) {
+      const section = this.page.locator('section').filter({ hasText: 'Saksnummer' });
+      await section.waitFor();
+
+      expect(section.getByText(this.#internalSaksnummer)).toBeVisible();
+    } else {
+      expect(await this.page.getByLabel('Saksnummer (valgfri)').inputValue()).toBe(this.#userSaksnummer);
+    }
   }
 
   async verifyBegrunnelse() {
@@ -427,6 +476,22 @@ export class KlangPage {
       expect(await this.page.getByLabel('Dato for klagevedtaket fra Nav klageinstans').inputValue()).toBe(
         this.#vedtaksdato,
       );
+    }
+
+    if (this.#type === 'klageettersendelse') {
+      const fieldset = this.page.locator('fieldset').filter({
+        hasText:
+          'Har du mottatt et brev fra Nav klageinstans eller en annen enhet i Nav om at saken din er sendt til Nav klageinstans?',
+      });
+
+      await fieldset.waitFor();
+
+      if (this.#harMottattBrev === null) {
+        expect(fieldset.getByText('Ja')).not.toBeChecked();
+        expect(fieldset.getByText('Nei')).not.toBeChecked();
+      } else {
+        expect(fieldset.getByText(this.#harMottattBrev ? 'Ja' : 'Nei')).toBeChecked();
+      }
     }
 
     if (this.#type === 'klage') {
@@ -566,3 +631,22 @@ export class KlangPage {
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 const REGISTRERING = `http(?:s?)://(?:.+)/sak/(${UUID})`;
 export const SAK_REGEX = new RegExp(`${REGISTRERING}`);
+
+interface DeepLink {
+  saksnummer: string | null;
+  sakstype: string | null;
+  fagsystem: string | null;
+  ka: boolean | null;
+}
+
+const toQueryParams = (params: DeepLink) => {
+  const query = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== null && value !== '') {
+      query.append(key, value);
+    }
+  }
+
+  return query.toString();
+};
