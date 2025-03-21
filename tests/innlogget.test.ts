@@ -1,9 +1,10 @@
 import { Innsendingsytelse } from '../fixtures/innsendingsytelse';
 import { test } from '../fixtures/registrering/fixture';
+import { Type } from '../fixtures/registrering/klang-page';
 
 test.describe('Innlogget', () => {
   test('Klage', async ({ klangPage }) => {
-    await klangPage.createLoggedInCase('klage', Innsendingsytelse.ALDERSPENSJON);
+    await klangPage.createLoggedInCase(Type.Klage, Innsendingsytelse.ALDERSPENSJON);
 
     await klangPage.checkAvslagCheckbox();
     await klangPage.checkUtbetaltCheckbox();
@@ -23,7 +24,7 @@ test.describe('Innlogget', () => {
   });
 
   test('Anke', async ({ klangPage }) => {
-    await klangPage.createLoggedInCase('anke', Innsendingsytelse.ARBEID_MED_STOTTE);
+    await klangPage.createLoggedInCase(Type.Anke, Innsendingsytelse.ARBEID_MED_STOTTE);
 
     await klangPage.insertVedtaksdato('01.02.2025');
     await klangPage.insertSaksnummer('1337');
@@ -40,7 +41,7 @@ test.describe('Innlogget', () => {
   });
 
   test('Klageettersendelse', async ({ klangPage }) => {
-    await klangPage.createLoggedInCase('klageettersendelse', Innsendingsytelse.ARBEIDSAVKLARINGSPENGER);
+    await klangPage.createLoggedInCase(Type.Klageettersendelse, Innsendingsytelse.ARBEIDSAVKLARINGSPENGER);
 
     await klangPage.insertVedtaksdato('01.02.2025');
     await klangPage.checkHarMottattBrevCheckbox();
@@ -58,7 +59,7 @@ test.describe('Innlogget', () => {
   });
 
   test('Ankeettersendelse', async ({ klangPage }) => {
-    await klangPage.createLoggedInCase('ankeettersendelse', Innsendingsytelse.ARBEIDSFORBEREDENDE_TRENING);
+    await klangPage.createLoggedInCase(Type.Ankeettersendelse, Innsendingsytelse.ARBEIDSFORBEREDENDE_TRENING);
 
     await klangPage.insertVedtaksdato('01.02.2025');
     await klangPage.insertSaksnummer('1337');

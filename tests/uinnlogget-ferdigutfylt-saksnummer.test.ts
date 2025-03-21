@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import { UI_DOMAIN } from '../config/env';
 import { Innsendingsytelse } from '../fixtures/innsendingsytelse';
 import { test } from '../fixtures/registrering/fixture';
+import { Type } from '../fixtures/registrering/klang-page';
 import { testUser } from '../testdata/user';
 
 test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
@@ -9,25 +10,25 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test('Klage', async ({ klangPage }) => {
-    await klangPage.createCase('klage', Innsendingsytelse.BILSTONAD, '6969');
+    await klangPage.createCase(Type.Klage, Innsendingsytelse.BILSTONAD, '6969');
     await klangPage.verifySaksnummer();
     await klangPage.verifyBegrunnelse();
   });
 
   test('Anke', async ({ klangPage }) => {
-    await klangPage.createCase('anke', Innsendingsytelse.DAGPENGER, '6969');
+    await klangPage.createCase(Type.Anke, Innsendingsytelse.DAGPENGER, '6969');
     await klangPage.verifySaksnummer();
     await klangPage.verifyBegrunnelse();
   });
 
   test('Klageettersendelse', async ({ klangPage }) => {
-    await klangPage.createCase('klageettersendelse', Innsendingsytelse.DAGPENGER_TILBAKEBETALING_FORSKUDD, '6969');
+    await klangPage.createCase(Type.Klageettersendelse, Innsendingsytelse.DAGPENGER_TILBAKEBETALING_FORSKUDD, '6969');
     await klangPage.verifySaksnummer();
     await klangPage.verifyBegrunnelse();
   });
 
   test('Ankeettersendelse', async ({ klangPage }) => {
-    await klangPage.createCase('ankeettersendelse', Innsendingsytelse.EKTEFELLEBIDRAG, '6969');
+    await klangPage.createCase(Type.Ankeettersendelse, Innsendingsytelse.EKTEFELLEBIDRAG, '6969');
     await klangPage.verifySaksnummer();
     await klangPage.verifyBegrunnelse();
   });
@@ -35,7 +36,14 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
   test('Bytte av dyplenkedata', async ({ klangPage, page }) => {
     const ytelse = Innsendingsytelse.ENGANGSSTONAD;
 
-    await klangPage.createCase('klageettersendelse', ytelse, '1st_saksnummer', '1st_sakstype', '1st_fagsystem', null);
+    await klangPage.createCase(
+      Type.Klageettersendelse,
+      ytelse,
+      '1st_saksnummer',
+      '1st_sakstype',
+      '1st_fagsystem',
+      null,
+    );
 
     await klangPage.verifySaksnummer();
     await klangPage.verifyBegrunnelse();
@@ -55,7 +63,7 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
     const fagsystem = 'initial_fagsystem';
     const caseIsAtKA = true;
 
-    await klangPage.createCase('klageettersendelse', ytelse, saksnummer, sakstype, fagsystem, caseIsAtKA);
+    await klangPage.createCase(Type.Klageettersendelse, ytelse, saksnummer, sakstype, fagsystem, caseIsAtKA);
 
     await klangPage.verifySaksnummer();
     await klangPage.insertIdNumber(testUser.id);
