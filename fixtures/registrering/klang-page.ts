@@ -119,6 +119,7 @@ export class KlangPage {
     await this.#ensureNewLoggedInCase();
   }
 
+  // We want to avoid resuming an old case with unknown data, so we create/resume, delete, and create again for a guaranteed fresh one
   async #ensureNewLoggedInCase() {
     const params = toQueryParams({
       saksnummer: this.#internalSaksnummer,
