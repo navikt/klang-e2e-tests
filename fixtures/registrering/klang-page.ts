@@ -6,7 +6,13 @@ import { testUser } from '../../testdata/user';
 import { clearIfNotEmpty, finishedRequest, formatId } from '../helpers';
 import type { Innsendingsytelse } from '../innsendingsytelse';
 import { logIn, verifyLogin } from './login-page';
-type Type = 'klage' | 'anke' | 'klageettersendelse' | 'ankeettersendelse';
+
+export enum Type {
+  Klage = 'klage',
+  Anke = 'anke',
+  Klageettersendelse = 'ettersendelse/klage',
+  Ankeettersendelse = 'ettersendelse/anke',
+}
 
 export class KlangPage {
   #loggedIn = false;
@@ -54,14 +60,6 @@ export class KlangPage {
       ka: harMottattBrev,
     });
 
-    if (this.#type === 'klageettersendelse') {
-      return this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/klage/${this.#ytelse}?${params}`);
-    }
-
-    if (this.#type === 'ankeettersendelse') {
-      return this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/anke/${this.#ytelse}?${params}`);
-    }
-
     return this.page.goto(`${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}?${params}`);
   }
 
@@ -81,20 +79,6 @@ export class KlangPage {
     this.#harMottattBrev = ka;
 
     const params = toQueryParams({ saksnummer, sakstype: sakSakstype, fagsystem: sakFagsystem, ka: ka });
-
-    if (type === 'klageettersendelse') {
-      await this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/klage/${this.#ytelse}?${params}`);
-      await this.page.waitForURL(`${UI_DOMAIN}/nb/ettersendelse/klage/${this.#ytelse}/begrunnelse`);
-
-      return;
-    }
-
-    if (type === 'ankeettersendelse') {
-      await this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/anke/${this.#ytelse}?${params}`);
-      await this.page.waitForURL(`${UI_DOMAIN}/nb/ettersendelse/anke/${this.#ytelse}/begrunnelse`);
-
-      return;
-    }
 
     await this.page.goto(`${UI_DOMAIN}/nb/${type}/${this.#ytelse}?${params}`);
     await this.page.waitForURL(`${UI_DOMAIN}/nb/${type}/${this.#ytelse}/begrunnelse`);
@@ -134,13 +118,7 @@ export class KlangPage {
   }
 
   async #createLoggedInCase(params: string) {
-    if (this.#type === 'klageettersendelse') {
-      await this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/klage/${this.#ytelse}?${params}`);
-    } else if (this.#type === 'ankeettersendelse') {
-      await this.page.goto(`${UI_DOMAIN}/nb/ettersendelse/anke/${this.#ytelse}?${params}`);
-    } else {
-      await this.page.goto(`${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}?${params}`);
-    }
+    await this.page.goto(`${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}?${params}`);
 
     await this.page.waitForURL(`${UI_DOMAIN}/nb/sak/**/begrunnelse`);
   }
@@ -194,14 +172,6 @@ export class KlangPage {
       return this.page.waitForURL(`${UI_DOMAIN}/nb/sak/**/oppsummering`);
     }
 
-    if (this.#type === 'klageettersendelse') {
-      return this.page.waitForURL(`${UI_DOMAIN}/nb/ettersendelse/klage/${this.#ytelse}/oppsummering`);
-    }
-
-    if (this.#type === 'ankeettersendelse') {
-      return this.page.waitForURL(`${UI_DOMAIN}/nb/ettersendelse/anke/${this.#ytelse}/oppsummering`);
-    }
-
     return this.page.waitForURL(`${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}/oppsummering`);
   }
 
@@ -216,25 +186,19 @@ export class KlangPage {
 
     const name = await download.suggestedFilename();
 
-    if (this.#type === 'klage' || this.#type === 'anke') {
+    if (this.#type === Type.Klage || this.#type === Type.Anke) {
       expect(name).toContain(
-        `Nav ${this.#type === 'anke' || this.#type === 'klage' ? this.#type : 'ettersendelse'} - `,
+        `Nav ${this.#type === Type.Anke || this.#type === Type.Klage ? this.#type : 'ettersendelse'} - `,
       );
     }
 
-    if (this.#type === 'klageettersendelse') {
-      await this.page.waitForURL(`${UI_DOMAIN}/nb/ettersendelse/klage/${this.#ytelse}/innsending`);
-    } else if (this.#type === 'ankeettersendelse') {
-      await this.page.waitForURL(`${UI_DOMAIN}/nb/ettersendelse/anke/${this.#ytelse}/innsending`);
-    } else {
-      await this.page.waitForURL(`${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}/innsending`);
-    }
+    await this.page.waitForURL(`${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}/innsending`);
 
     this.verifyHvaGjørDuNå();
   }
 
   verifyHvaGjørDuNå() {
-    if (this.#type === 'klageettersendelse' || this.#type === 'ankeettersendelse') {
+    if (this.#type === Type.Klageettersendelse || this.#type === Type.Ankeettersendelse) {
       expect(
         this.page.getByText(
           'Skriv ut dokumentasjonen. Ved utskrift kommer en forside som Nav har laget for deg. Denne skal ligge øverst. Følg oppskriften på forsiden.',
@@ -301,7 +265,7 @@ export class KlangPage {
     this.#vedtaksdato = vedtaksdato;
 
     const label =
-      this.#type === 'klage' || this.#type === 'klageettersendelse'
+      this.#type === Type.Klage || this.#type === Type.Klageettersendelse
         ? 'Vedtaksdato (valgfri)'
         : 'Dato for klagevedtaket fra Nav klageinstans';
 
@@ -323,27 +287,23 @@ export class KlangPage {
     const apiUrl = '**/api/klanker/**/fritekst';
     const requestPromise = this.#loggedIn ? this.page.waitForRequest(apiUrl) : null;
 
-    const KLAGE_LABEL = 'Hvorfor er du uenig?';
-    const ANKE_LABEL = 'Hvorfor er du uenig i klagevedtaket?';
-    const ETTERSENDELSE_LABEL = 'Har du noe å legge til?';
+    const label = () => {
+      switch (this.#type) {
+        case Type.Klage:
+          return 'Hvorfor er du uenig?';
+        case Type.Anke:
+          return 'Hvorfor er du uenig i klagevedtaket?';
+        case Type.Klageettersendelse:
+        case Type.Ankeettersendelse:
+          return 'Har du noe å legge til?';
+        default:
+          throw new Error(`Unknown type: ${this.#type}`);
+      }
+    };
 
-    if (this.#type === 'klage') {
-      await clearIfNotEmpty(this.page, this.page.getByLabel(KLAGE_LABEL), apiUrl, this.#loggedIn);
-      await this.page.getByLabel(KLAGE_LABEL).fill(begrunnelse);
-      await this.page.keyboard.press('Tab');
-    }
-
-    if (this.#type === 'anke') {
-      await clearIfNotEmpty(this.page, this.page.getByLabel(ANKE_LABEL), apiUrl, this.#loggedIn);
-      await this.page.getByLabel(ANKE_LABEL).fill(begrunnelse);
-      await this.page.keyboard.press('Tab');
-    }
-
-    if (this.#type === 'klageettersendelse' || this.#type === 'ankeettersendelse') {
-      await clearIfNotEmpty(this.page, this.page.getByLabel(ETTERSENDELSE_LABEL), apiUrl, this.#loggedIn);
-      await this.page.getByLabel(ETTERSENDELSE_LABEL).fill(begrunnelse);
-      await this.page.keyboard.press('Tab');
-    }
+    await clearIfNotEmpty(this.page, this.page.getByLabel(label()), apiUrl, this.#loggedIn);
+    await this.page.getByLabel(label()).fill(begrunnelse);
+    await this.page.keyboard.press('Tab');
 
     if (requestPromise !== null) {
       await finishedRequest(requestPromise);
@@ -351,11 +311,11 @@ export class KlangPage {
   }
 
   checkJegForstårCheckbox() {
-    if (this.#type === 'klage') {
+    if (this.#type === Type.Klage) {
       return this.page.getByLabel('Jeg forstår at jeg selv må skrive ut og sende klagen i posten selv.').check();
     }
 
-    if (this.#type === 'anke') {
+    if (this.#type === Type.Anke) {
       return this.page.getByLabel('Jeg forstår at jeg selv må skrive ut og sende anken i posten selv.').check();
     }
 
@@ -471,15 +431,15 @@ export class KlangPage {
 
     await this.verifySaksnummer();
 
-    if (this.#type === 'klage' || this.#type === 'klageettersendelse') {
+    if (this.#type === Type.Klage || this.#type === Type.Klageettersendelse) {
       expect(await this.page.getByLabel('Vedtaksdato (valgfri)').inputValue()).toBe(this.#vedtaksdato);
-    } else if (this.#type === 'anke') {
+    } else if (this.#type === Type.Anke) {
       expect(await this.page.getByLabel('Dato for klagevedtaket fra Nav klageinstans').inputValue()).toBe(
         this.#vedtaksdato,
       );
     }
 
-    if (this.#type === 'klageettersendelse') {
+    if (this.#type === Type.Klageettersendelse) {
       const fieldset = this.page.locator('fieldset').filter({
         hasText:
           'Har du mottatt et brev fra Nav klageinstans eller en annen enhet i Nav om at saken din er sendt til Nav klageinstans?',
@@ -495,11 +455,11 @@ export class KlangPage {
       }
     }
 
-    if (this.#type === 'klage') {
+    if (this.#type === Type.Klage) {
       expect(await this.page.getByLabel('Hvorfor er du uenig?').inputValue()).toBe(this.#begrunnelse);
-    } else if (this.#type === 'anke') {
+    } else if (this.#type === Type.Anke) {
       expect(await this.page.getByLabel('Hvorfor er du uenig i klagevedtaket?').inputValue()).toBe(this.#begrunnelse);
-    } else if (this.#type === 'klageettersendelse' || this.#type === 'ankeettersendelse') {
+    } else if (this.#type === Type.Klageettersendelse || this.#type === Type.Ankeettersendelse) {
       expect(await this.page.getByLabel('Har du noe å legge til?').inputValue()).toBe(this.#begrunnelse);
     }
 
@@ -562,11 +522,11 @@ export class KlangPage {
       (request) => request.url().endsWith(`/klanker/${uuid}`) && request.method() === 'DELETE',
     );
 
-    if (this.#type === 'klage') {
+    if (this.#type === Type.Klage) {
       await this.page.getByTitle('Slett klagen og returner til hovedsiden').click();
-    } else if (this.#type === 'anke') {
+    } else if (this.#type === Type.Anke) {
       await this.page.getByTitle('Slett anken og returner til hovedsiden').click();
-    } else if (this.#type === 'klageettersendelse' || this.#type === 'ankeettersendelse') {
+    } else if (this.#type === Type.Klageettersendelse || this.#type === Type.Ankeettersendelse) {
       await this.page.getByTitle('Slett ettersendelsen og returner til hovedsiden').click();
     }
 
@@ -579,13 +539,13 @@ export class KlangPage {
     await this.page.getByText('Send inn').click();
     await this.page.waitForURL(`${UI_DOMAIN}/nb/sak/**/kvittering`);
 
-    if (this.#type === 'klage') {
+    if (this.#type === Type.Klage) {
       expect(this.page.getByText('Kvittering for innsendt klage')).toBeVisible();
-    } else if (this.#type === 'anke') {
+    } else if (this.#type === Type.Anke) {
       expect(this.page.getByText('Kvittering for innsendt anke')).toBeVisible();
-    } else if (this.#type === 'klageettersendelse') {
+    } else if (this.#type === Type.Klageettersendelse) {
       expect(this.page.getByText('Kvittering for ettersendelse til klage')).toBeVisible();
-    } else if (this.#type === 'ankeettersendelse') {
+    } else if (this.#type === Type.Ankeettersendelse) {
       expect(this.page.getByText('Kvittering for ettersendelse til anke')).toBeVisible();
     }
 
@@ -595,11 +555,11 @@ export class KlangPage {
   private async downloadLoggedInPdf() {
     const pagePromise = this.context.waitForEvent('page', { timeout: 10000 });
 
-    if (this.#type === 'klage') {
+    if (this.#type === Type.Klage) {
       await this.page.getByText('Se og last ned klagen din').click();
-    } else if (this.#type === 'anke') {
+    } else if (this.#type === Type.Anke) {
       await this.page.getByText('Se og last ned anken din').click();
-    } else if (this.#type === 'klageettersendelse' || this.#type === 'ankeettersendelse') {
+    } else if (this.#type === Type.Klageettersendelse || this.#type === Type.Ankeettersendelse) {
       await this.page.getByText('Se og last ned den ettersendte dokumentasjonen din').click();
     }
 

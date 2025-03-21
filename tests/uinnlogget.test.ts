@@ -1,5 +1,6 @@
 import { Innsendingsytelse } from '../fixtures/innsendingsytelse';
 import { test } from '../fixtures/registrering/fixture';
+import { Type } from '../fixtures/registrering/klang-page';
 import { testUser } from '../testdata/user';
 
 test.describe('Uinnlogget', () => {
@@ -7,7 +8,7 @@ test.describe('Uinnlogget', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test('Klage', async ({ klangPage }) => {
-    await klangPage.createCase('klage', Innsendingsytelse.BARNEBIDRAG_OG_BIDRAGSFORSKUDD);
+    await klangPage.createCase(Type.Klage, Innsendingsytelse.BARNEBIDRAG_OG_BIDRAGSFORSKUDD);
     await klangPage.insertIdNumber(testUser.id);
     await klangPage.insertFirstName('Vedtaksuenig');
     await klangPage.insertLastName('Sytersen');
@@ -30,7 +31,7 @@ test.describe('Uinnlogget', () => {
   });
 
   test('Anke', async ({ klangPage }) => {
-    await klangPage.createCase('anke', Innsendingsytelse.BARNEPENSJON);
+    await klangPage.createCase(Type.Anke, Innsendingsytelse.BARNEPENSJON);
     await klangPage.insertIdNumber(testUser.id);
     await klangPage.insertFirstName('Vedtaksuenig');
     await klangPage.insertLastName('Sytersen');
@@ -49,7 +50,7 @@ test.describe('Uinnlogget', () => {
   });
 
   test('Klageettersendelse', async ({ klangPage }) => {
-    await klangPage.createCase('klageettersendelse', Innsendingsytelse.BARNETRYGD);
+    await klangPage.createCase(Type.Klageettersendelse, Innsendingsytelse.BARNETRYGD);
     await klangPage.insertIdNumber(testUser.id);
     await klangPage.insertFirstName('Vedtaksuenig');
     await klangPage.insertLastName('Sytersen');
@@ -71,7 +72,7 @@ test.describe('Uinnlogget', () => {
   });
 
   test('Ankeettersendelse', async ({ klangPage }) => {
-    await klangPage.createCase('ankeettersendelse', Innsendingsytelse.BIDRAGSFORSKUDD);
+    await klangPage.createCase(Type.Ankeettersendelse, Innsendingsytelse.BIDRAGSFORSKUDD);
     await klangPage.insertIdNumber(testUser.id);
     await klangPage.insertFirstName('Vedtaksuenig');
     await klangPage.insertLastName('Sytersen');
@@ -92,7 +93,7 @@ test.describe('Uinnlogget', () => {
   });
 
   test('Uinnlogget til innlogget', async ({ klangPage }) => {
-    await klangPage.createCase('klage', Innsendingsytelse.BIDRAG_TIL_SARLIGE_UTGIFTER);
+    await klangPage.createCase(Type.Klage, Innsendingsytelse.BIDRAG_TIL_SARLIGE_UTGIFTER);
     await klangPage.insertIdNumber(testUser.id);
     await klangPage.insertFirstName('Vedtaksuenig');
     await klangPage.insertLastName('Sytersen');
