@@ -1,11 +1,12 @@
 apiVersion: nais.io/v1
 kind: Naisjob
 metadata:
+  name: klang-e2e-tests-{{jobid}}
+  namespace: klage
   labels:
     team: klage
     e2e: klang
-  name: klang-e2e-tests-{{jobid}}
-  namespace: klage
+    job_id: {{jobid}}
 spec:
   backoffLimit: 0
   resources:
@@ -16,9 +17,13 @@ spec:
       cpu: 8000m
       memory: 8Gi  
   image: {{image}}
+  env:
+    - name: JOB_ID
+      value: {{jobid}}
   envFrom:
-  - secret: slack-e2e-secrets
-  - configmap: slack-e2e-configmap
+    - secret: slack-e2e-secrets
+    - configmap: slack-e2e-configmap
+    - secret: klage-job-status-write-api-key
   accessPolicy:
     outbound:
       external:
