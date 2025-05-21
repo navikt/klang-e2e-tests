@@ -98,3 +98,12 @@ jobs:
           TEAM: klage
           RESOURCE: nais/e2e-job.yaml
           IMAGE: ${{ needs.build.outputs.image }}
+
+      - name: Check E2E job status
+        id: status
+        uses: navikt/klage-job-status/action@main
+        with:
+          api_key: ${{ secrets.STATUS_API_KEY }}
+          job_id: ${{ steps.uuid.outputs.uuid }}
+          fail: true
+          fail_on_unknown: true
