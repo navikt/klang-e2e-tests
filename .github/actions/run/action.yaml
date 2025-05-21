@@ -2,6 +2,9 @@ name: 'E2E'
 description: 'Run E2E tests'
 
 inputs:
+  status_api_key:
+    description: 'API key to read job status'
+    required: true
   nais_management_project_id:
     description: 'Project ID for nais/logins'
     required: true
@@ -21,6 +24,9 @@ outputs:
   image:
     description: 'E2E image'
     value: ${{ steps.image.outputs.image }}
+  status:
+    description: 'E2E job status'
+    value: ${{ steps.status.outputs.status }}
 
 runs:
   using: "composite"
@@ -68,3 +74,12 @@ runs:
         TEAM: klage
         RESOURCE: nais/e2e-job.yaml
         IMAGE: ${{ steps.image.outputs.image }}
+
+    - name: Check E2E job status
+      id: status
+      uses: navikt/klage-job-status/action@main
+      with:
+        api_key: ${{ inputs.status_api_key }}
+        job_id: ${{ steps.uuid.outputs.uuid }}
+        fail: true
+        fail_on_unknown: true
