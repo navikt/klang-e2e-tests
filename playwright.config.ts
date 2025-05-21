@@ -9,7 +9,7 @@ export default defineConfig({
   globalSetup: require.resolve('./setup/global-setup'),
 
   outputDir: '/tmp/test-results',
-  reporter: [['list'], ['./reporters/slack-reporter.ts']],
+  reporter: [['list'], ['./reporters/slack-reporter.ts'], ['./reporters/status.ts']],
   retries: 1,
 
   use: {
