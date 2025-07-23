@@ -8,6 +8,7 @@ metadata:
     e2e: klang
     job_id: {{jobid}}
 spec:
+  ttl: 7m
   backoffLimit: 0
   resources:
     requests:
