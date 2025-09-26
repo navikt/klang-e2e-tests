@@ -1,7 +1,7 @@
+import { UI_DOMAIN } from '@app/config/env';
+import { formatId } from '@app/fixtures/helpers';
+import { testUser, type User } from '@app/testdata/user';
 import { expect, type Page } from '@playwright/test';
-import { UI_DOMAIN } from '../../config/env';
-import { testUser, type User } from '../../testdata/user';
-import { formatId } from '../helpers';
 
 export class LoginPage {
   constructor(public readonly page: Page) {}

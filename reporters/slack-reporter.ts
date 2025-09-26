@@ -1,4 +1,13 @@
 import nodePath from 'node:path';
+import {
+  asyncForEach,
+  delay,
+  getFullStatusIcon,
+  getTestStatusIcon,
+  getTestTitle,
+  SlackIcon,
+} from '@app/reporters/functions';
+import { getSlack, type SlackMessageThread } from '@app/slack/slack-client';
 import type {
   FullConfig,
   FullResult,
@@ -8,8 +17,6 @@ import type {
   TestResult,
   TestStep,
 } from '@playwright/test/reporter';
-import { getSlack, type SlackMessageThread } from '../slack/slack-client';
-import { asyncForEach, delay, getFullStatusIcon, getTestStatusIcon, getTestTitle, SlackIcon } from './functions';
 
 interface TestSlackData {
   icon: SlackIcon;

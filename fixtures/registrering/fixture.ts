@@ -1,6 +1,6 @@
+import { KlangPage } from '@app/fixtures/registrering/klang-page';
+import { LoginPage } from '@app/fixtures/registrering/login-page';
 import { test as base } from '@playwright/test';
-import { KlangPage } from './klang-page';
-import { LoginPage } from './login-page';
 
 interface Pages {
   klangPage: KlangPage;

@@ -15,7 +15,14 @@
     "isolatedModules": true,
     "noEmit": true,
     "rootDir": "./",
-    "outDir": "./dist"
+    "outDir": "./dist",
+
+    /* Paths */
+    "baseUrl": "./",
+    "paths": {
+      "@app/*": ["*"]
+    },
+    "incremental": true
   },
   "include": ["./"]
 }
