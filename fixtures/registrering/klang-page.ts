@@ -35,11 +35,6 @@ export class KlangPage {
   #sakSakstype: string | null = null;
   #harMottattBrev: boolean | null = null;
 
-  #avslagChecked: boolean | null = null;
-  #utbetaltChecked: boolean | null = null;
-  #uenigChecked: boolean | null = null;
-  #tilbakebetalingChecked: boolean | null = null;
-
   constructor(
     private page: Page,
     private context: BrowserContext,
@@ -223,46 +218,6 @@ export class KlangPage {
     expect(this.page.getByText('0109 Oslo')).toBeVisible();
   }
 
-  async checkAvslagCheckbox(check = true) {
-    this.#avslagChecked = check;
-    const label = this.page.getByLabel('Jeg har fått avslag på søknaden min');
-    const checked = await label.isChecked();
-
-    if (check !== checked) {
-      await label.click();
-    }
-  }
-
-  async checkUtbetaltCheckbox(check = true) {
-    this.#utbetaltChecked = check;
-    const label = this.page.getByLabel('Jeg har fått for lite utbetalt');
-    const checked = await label.isChecked();
-
-    if (check !== checked) {
-      await label.click();
-    }
-  }
-
-  async checkUenigCheckbox(check = true) {
-    this.#uenigChecked = check;
-    const label = this.page.getByLabel('Jeg er uenig i noe annet i vedtaket mitt');
-    const checked = await label.isChecked();
-
-    if (check !== checked) {
-      await label.click();
-    }
-  }
-
-  async checkTilbakebetalingCheckbox(check = true) {
-    this.#tilbakebetalingChecked = check;
-    const label = this.page.getByLabel('Jeg er uenig i vedtaket om tilbakebetaling');
-    const checked = await label.isChecked();
-
-    if (check !== checked) {
-      await label.click();
-    }
-  }
-
   async insertVedtaksdato(vedtaksdato: string) {
     this.#vedtaksdato = vedtaksdato;
 
@@ -381,22 +336,6 @@ export class KlangPage {
     await expect(this.page.getByText(this.#vedtaksdato)).toBeVisible();
     await expect(this.page.getByText(this.#begrunnelse)).toBeVisible();
 
-    if (this.#uenigChecked) {
-      await expect(this.page.getByText('Jeg er uenig i noe annet i vedtaket mitt')).toBeVisible();
-    }
-
-    if (this.#avslagChecked) {
-      await expect(this.page.getByText('Jeg har fått avslag på søknaden min')).toBeVisible();
-    }
-
-    if (this.#utbetaltChecked) {
-      await expect(this.page.getByText('Jeg har fått for lite utbetalt')).toBeVisible();
-    }
-
-    if (this.#tilbakebetalingChecked) {
-      await expect(this.page.getByText('Jeg er uenig i vedtaket om tilbakebetaling')).toBeVisible();
-    }
-
     if (this.#hasUploadedAttachments) {
       expect(this.page.getByText('Vedlagde dokumenter (3)')).toBeVisible;
       expect(this.page.getByText('dummy.pdf')).toBeVisible;
@@ -463,30 +402,6 @@ export class KlangPage {
       expect(await this.page.getByLabel('Hvorfor er du uenig i klagevedtaket?').inputValue()).toBe(this.#begrunnelse);
     } else if (this.#type === Type.Klageettersendelse || this.#type === Type.Ankeettersendelse) {
       expect(await this.page.getByLabel('Har du noe å legge til?').inputValue()).toBe(this.#begrunnelse);
-    }
-
-    if (this.#uenigChecked) {
-      expect(this.page.getByLabel('Jeg er uenig i noe annet i vedtaket mitt')).toBeChecked();
-    } else if (this.#uenigChecked === false) {
-      expect(this.page.getByLabel('Jeg er uenig i noe annet i vedtaket mitt')).not.toBeChecked();
-    }
-
-    if (this.#avslagChecked) {
-      expect(this.page.getByLabel('Jeg har fått avslag på søknaden min')).toBeChecked();
-    } else if (this.#uenigChecked === false) {
-      expect(this.page.getByLabel('Jeg har fått avslag på søknaden min')).not.toBeChecked();
-    }
-
-    if (this.#utbetaltChecked) {
-      expect(this.page.getByLabel('Jeg har fått for lite utbetalt')).toBeChecked();
-    } else if (this.#uenigChecked === false) {
-      expect(this.page.getByLabel('Jeg har fått for lite utbetalt')).not.toBeChecked();
-    }
-
-    if (this.#tilbakebetalingChecked) {
-      expect(this.page.getByLabel('Jeg er uenig i vedtaket om tilbakebetaling')).toBeChecked();
-    } else if (this.#uenigChecked === false) {
-      expect(this.page.getByLabel('Jeg er uenig i vedtaket om tilbakebetaling')).not.toBeChecked();
     }
 
     if (this.#hasUploadedAttachments) {

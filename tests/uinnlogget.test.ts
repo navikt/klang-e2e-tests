@@ -12,10 +12,6 @@ test.describe('Uinnlogget', () => {
     await klangPage.insertIdNumber(testUser.id);
     await klangPage.insertFirstName('Vedtaksuenig');
     await klangPage.insertLastName('Sytersen');
-    await klangPage.checkAvslagCheckbox();
-    await klangPage.checkUtbetaltCheckbox();
-    await klangPage.checkUenigCheckbox();
-    await klangPage.checkTilbakebetalingCheckbox();
     await klangPage.insertVedtaksdato('01.02.2025');
     await klangPage.insertSaksnummer('1337');
     await klangPage.insertBegrunnelse('Fordi jeg ikke er enig');
@@ -97,10 +93,6 @@ test.describe('Uinnlogget', () => {
     await klangPage.insertIdNumber(testUser.id);
     await klangPage.insertFirstName('Vedtaksuenig');
     await klangPage.insertLastName('Sytersen');
-    await klangPage.checkAvslagCheckbox();
-    await klangPage.checkUtbetaltCheckbox();
-    await klangPage.checkUenigCheckbox();
-    await klangPage.checkTilbakebetalingCheckbox();
     await klangPage.insertVedtaksdato('01.02.2025');
     await klangPage.insertSaksnummer('1337');
     await klangPage.insertBegrunnelse('Fordi jeg ikke er enig');

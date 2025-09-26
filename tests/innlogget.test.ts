@@ -6,11 +6,6 @@ test.describe('Innlogget', () => {
   test('Klage', async ({ klangPage }) => {
     await klangPage.createLoggedInCase(Type.Klage, Innsendingsytelse.ALDERSPENSJON);
 
-    await klangPage.checkAvslagCheckbox();
-    await klangPage.checkUtbetaltCheckbox();
-    await klangPage.checkUenigCheckbox();
-    await klangPage.checkTilbakebetalingCheckbox();
-
     await klangPage.insertVedtaksdato('01.02.2025');
     await klangPage.insertSaksnummer('1337');
     await klangPage.insertBegrunnelse('Fordi jeg ikke er enig');
