@@ -1,7 +1,7 @@
-import { Innsendingsytelse } from '../fixtures/innsendingsytelse';
-import { test } from '../fixtures/registrering/fixture';
-import { Type } from '../fixtures/registrering/klang-page';
-import { testUser } from '../testdata/user';
+import { Innsendingsytelse } from '@app/fixtures/innsendingsytelse';
+import { test } from '@app/fixtures/registrering/fixture';
+import { Type } from '@app/fixtures/registrering/klang-page';
+import { testUser } from '@app/testdata/user';
 
 test.describe('Uinnlogget', () => {
   // Don't reuse logged in state for these tests.

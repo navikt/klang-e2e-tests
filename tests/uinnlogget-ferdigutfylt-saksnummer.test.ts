@@ -1,9 +1,9 @@
+import { UI_DOMAIN } from '@app/config/env';
+import { Innsendingsytelse } from '@app/fixtures/innsendingsytelse';
+import { test } from '@app/fixtures/registrering/fixture';
+import { Type } from '@app/fixtures/registrering/klang-page';
+import { testUser } from '@app/testdata/user';
 import { expect } from '@playwright/test';
-import { UI_DOMAIN } from '../config/env';
-import { Innsendingsytelse } from '../fixtures/innsendingsytelse';
-import { test } from '../fixtures/registrering/fixture';
-import { Type } from '../fixtures/registrering/klang-page';
-import { testUser } from '../testdata/user';
 
 test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
   // Don't reuse logged in state for these tests.

@@ -1,12 +1,12 @@
 import path from 'node:path';
+import { UI_DOMAIN } from '@app/config/env';
+import { dismissConsentBanner } from '@app/fixtures/consent';
+import { clearIfNotEmpty, finishedRequest, formatId } from '@app/fixtures/helpers';
+import type { Innsendingsytelse } from '@app/fixtures/innsendingsytelse';
+import { logIn, verifyLogin } from '@app/fixtures/registrering/login-page';
+import { testUser } from '@app/testdata/user';
 import type { BrowserContext, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
-import { UI_DOMAIN } from '../../config/env';
-import { testUser } from '../../testdata/user';
-import { dismissConsentBanner } from '../consent';
-import { clearIfNotEmpty, finishedRequest, formatId } from '../helpers';
-import type { Innsendingsytelse } from '../innsendingsytelse';
-import { logIn, verifyLogin } from './login-page';
 
 export enum Type {
   Klage = 'klage',

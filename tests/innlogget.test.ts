@@ -1,6 +1,6 @@
-import { Innsendingsytelse } from '../fixtures/innsendingsytelse';
-import { test } from '../fixtures/registrering/fixture';
-import { Type } from '../fixtures/registrering/klang-page';
+import { Innsendingsytelse } from '@app/fixtures/innsendingsytelse';
+import { test } from '@app/fixtures/registrering/fixture';
+import { Type } from '@app/fixtures/registrering/klang-page';
 
 test.describe('Innlogget', () => {
   test('Klage', async ({ klangPage }) => {
