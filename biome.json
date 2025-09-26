@@ -1,43 +1,41 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "organizeImports": { "enabled": true },
+  "$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
-      "all": true,
       "nursery": {
-        "all": true,
-        "useImportRestrictions": { "level": "off" },
-        "noSecrets": { "level": "off", "options": {} },
-        "useComponentExportOnlyModules": { "level": "off", "options": {} },
-        "noEnum": { "level": "off" },
-        "useExplicitType": { "level": "off" },
-        "useConsistentMemberAccessibility": { "level": "off", "options": {} },
-        "useConsistentCurlyBraces": { "level": "off", "fix": "none" },
-        "noProcessEnv": { "level": "off" }
+        "noSecrets": "off",
+        "useExplicitType": "off"
       },
       "correctness": {
-        "noUndeclaredDependencies": { "level": "off" },
-        "useImportExtensions": { "level": "off", "fix": "none", "options": {} },
-        "noUndeclaredVariables": { "level": "off" },
-        "noNodejsModules": { "level": "off" }
+        "noUndeclaredDependencies": "off",
+        "useImportExtensions": "off",
+        "noUndeclaredVariables": "off",
+        "noNodejsModules": "off",
+        "noUnusedImports": { "level": "on", "fix": "safe", "options": {} }
       },
       "style": {
-        "noImplicitBoolean": { "level": "off", "fix": "none" },
-        "useDefaultSwitchClause": { "level": "off" },
-        "useNamingConvention": { "level": "off", "fix": "none", "options": {} },
-        "noParameterProperties": { "level": "off" }
+        "noImplicitBoolean": "off",
+        "useDefaultSwitchClause": "off",
+        "useNamingConvention": "off",
+        "noParameterProperties": "off",
+        "useComponentExportOnlyModules": "off",
+        "noEnum": "off",
+        "useConsistentMemberAccessibility": "off",
+        "useConsistentCurlyBraces": "off",
+        "noProcessEnv": "off"
       },
       "suspicious": {
-        "noConsole": { "level": "off", "options": { "allow": ["debug", "info", "warn", "error"] } },
-        "noReactSpecificProps": { "level": "off" },
-        "noEmptyBlockStatements": { "level": "off" }
+        "noConsole": "off",
+        "noReactSpecificProps": "off",
+        "noEmptyBlockStatements": "off"
       },
       "complexity": {
         "noExcessiveCognitiveComplexity": { "level": "warn", "options": { "maxAllowedComplexity": 30 } }
       },
       "performance": {
-        "useTopLevelRegex": { "level": "off" }
+        "useTopLevelRegex": "off"
       }
     }
   },
@@ -47,6 +45,6 @@
     "linter": { "enabled": true }
   },
   "files": {
-    "ignore": ["test-results/**"]
+    "includes": ["**", "!**/test-results"]
   }
 }

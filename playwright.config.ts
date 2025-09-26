@@ -1,6 +1,5 @@
 import { defineConfig } from 'playwright/test';
 
-// biome-ignore lint/style/noDefaultExport: https://playwright.dev/docs/test-configuration
 export default defineConfig({
   name: 'Klang',
   testDir: './tests',

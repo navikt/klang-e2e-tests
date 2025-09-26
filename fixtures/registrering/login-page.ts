@@ -1,6 +1,6 @@
-import { type Page, expect } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import { UI_DOMAIN } from '../../config/env';
-import { type User, testUser } from '../../testdata/user';
+import { testUser, type User } from '../../testdata/user';
 import { formatId } from '../helpers';
 
 export class LoginPage {

@@ -8,8 +8,8 @@ import type {
   TestResult,
   TestStep,
 } from '@playwright/test/reporter';
-import { type SlackMessageThread, getSlack } from '../slack/slack-client';
-import { SlackIcon, asyncForEach, delay, getFullStatusIcon, getTestStatusIcon, getTestTitle } from './functions';
+import { getSlack, type SlackMessageThread } from '../slack/slack-client';
+import { asyncForEach, delay, getFullStatusIcon, getTestStatusIcon, getTestTitle, SlackIcon } from './functions';
 
 interface TestSlackData {
   icon: SlackIcon;
@@ -252,5 +252,4 @@ const formatSteps = (steps: TestSlackData[], level = 1): string => {
     .join('\n');
 };
 
-// biome-ignore lint/style/noDefaultExport: https://playwright.dev/docs/test-reporters
 export default SlackReporter;

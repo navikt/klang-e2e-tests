@@ -92,5 +92,4 @@ class StatusReporter implements Reporter {
   }
 }
 
-// biome-ignore lint/style/noDefaultExport: https://playwright.dev/docs/test-reporters
 export default StatusReporter;
