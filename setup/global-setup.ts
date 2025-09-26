@@ -2,16 +2,20 @@ import type { Page } from '@playwright/test';
 import { chromium } from '@playwright/test';
 import type { FullConfig } from '@playwright/test/reporter';
 import { DEV_DOMAIN, USE_LOCAL } from '../config/env';
+import { dismissConsentBanner } from '../fixtures/consent';
 import { logIn, verifyLogin } from '../fixtures/registrering/login-page';
 import { testUser } from '../testdata/user';
 
 const globalSetup = async (config: FullConfig) => {
   const { storageState } = config.projects[0].use;
   const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const context = await browser.newContext();
+  const page = await context.newPage();
 
   await logIn(page, testUser.id, 'nb/klage/alderspensjon/begrunnelse');
   await verifyLogin(page, testUser);
+
+  await dismissConsentBanner(page, context);
 
   if (typeof storageState === 'string') {
     if (USE_LOCAL) {
