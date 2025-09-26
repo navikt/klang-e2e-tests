@@ -3,6 +3,7 @@ import type { BrowserContext, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 import { UI_DOMAIN } from '../../config/env';
 import { testUser } from '../../testdata/user';
+import { dismissConsentBanner } from '../consent';
 import { clearIfNotEmpty, finishedRequest, formatId } from '../helpers';
 import type { Innsendingsytelse } from '../innsendingsytelse';
 import { logIn, verifyLogin } from './login-page';
@@ -45,6 +46,7 @@ export class KlangPage {
   ) {
     this.#ytelse = null;
     this.#type = null;
+    dismissConsentBanner(page, context);
   }
 
   setDeepLinkParams(internalSaksnummer: string, sakSakstype: string, sakFagsystem: string, harMottattBrev: boolean) {
