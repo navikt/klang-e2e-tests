@@ -160,9 +160,9 @@ export class KlangPage {
 
   checkVedleggCheckbox(check = true) {
     this.#skalSendeMedVedlegg = check;
-    const label = this.page.getByLabel('Jeg skal sende med vedlegg.');
+    const checkbox = this.page.getByRole('checkbox', { name: 'Jeg skal sende med vedlegg.' });
 
-    return check ? label.check() : label.uncheck();
+    return check ? checkbox.check() : checkbox.uncheck();
   }
 
   async goToOppsummering() {
@@ -423,9 +423,9 @@ export class KlangPage {
       expect(await this.page.getByLabel('Etternavn').inputValue()).toBe(this.#lastName);
 
       if (this.#skalSendeMedVedlegg) {
-        expect(this.page.getByLabel('Jeg skal sende med vedlegg.')).toBeChecked();
+        expect(this.page.getByRole('checkbox', { name: 'Jeg skal sende med vedlegg.' })).toBeChecked();
       } else {
-        expect(this.page.getByLabel('Jeg skal sende med vedlegg.')).not.toBeChecked();
+        expect(this.page.getByRole('checkbox', { name: 'Jeg skal sende med vedlegg.' })).not.toBeChecked();
       }
     }
 
