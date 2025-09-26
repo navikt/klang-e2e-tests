@@ -1,8 +1,7 @@
-import { chromium } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { chromium } from '@playwright/test';
 import type { FullConfig } from '@playwright/test/reporter';
-import { DEV_DOMAIN } from '../config/env';
-import { USE_LOCAL } from '../config/env';
+import { DEV_DOMAIN, USE_LOCAL } from '../config/env';
 import { logIn, verifyLogin } from '../fixtures/registrering/login-page';
 import { testUser } from '../testdata/user';
 
@@ -25,7 +24,6 @@ const globalSetup = async (config: FullConfig) => {
   await browser.close();
 };
 
-// biome-ignore lint/style/noDefaultExport: https://playwright.dev/docs/test-global-setup-teardown
 export default globalSetup;
 
 const setLocalhostCookie = async (page: Page) => {
