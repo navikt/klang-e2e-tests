@@ -224,7 +224,7 @@ export class KlangPage {
     const label =
       this.#type === Type.Klage || this.#type === Type.Klageettersendelse
         ? 'Vedtaksdato (valgfri)'
-        : 'Dato for klagevedtaket fra Nav klageinstans';
+        : 'Dato for klagevedtaket fra Klageinstans';
 
     await clearIfNotEmpty(this.page, this.page.getByLabel(label), '**/api/klanker/**/vedtakdate', this.#loggedIn);
 
@@ -283,7 +283,7 @@ export class KlangPage {
     this.#harMottattBrev = check;
 
     const legend = this.page.getByRole('group', {
-      name: 'Har du mottatt et brev fra Nav klageinstans eller en annen enhet i Nav om at saken din er sendt til Nav klageinstans?',
+      name: 'Har du mottatt et brev fra Klageinstans eller en annen enhet i Nav om at saken din er sendt til Klageinstans?',
     });
 
     const jaChecked = await legend.getByLabel('Ja').isChecked();
@@ -300,7 +300,7 @@ export class KlangPage {
 
   verifyMottattBrev() {
     const legend = this.page.getByRole('group', {
-      name: 'Har du mottatt et brev fra Nav klageinstans eller en annen enhet i Nav om at saken din er sendt til Nav klageinstans?',
+      name: 'Har du mottatt et brev fra Klageinstans eller en annen enhet i Nav om at saken din er sendt til Klageinstans?',
     });
 
     if (this.#harMottattBrev) {
@@ -375,7 +375,7 @@ export class KlangPage {
     if (this.#type === Type.Klage || this.#type === Type.Klageettersendelse) {
       expect(await this.page.getByLabel('Vedtaksdato (valgfri)').inputValue()).toBe(this.#vedtaksdato);
     } else if (this.#type === Type.Anke) {
-      expect(await this.page.getByLabel('Dato for klagevedtaket fra Nav klageinstans').inputValue()).toBe(
+      expect(await this.page.getByLabel('Dato for klagevedtaket fra Klageinstans').inputValue()).toBe(
         this.#vedtaksdato,
       );
     }
@@ -383,7 +383,7 @@ export class KlangPage {
     if (this.#type === Type.Klageettersendelse) {
       const fieldset = this.page.locator('fieldset').filter({
         hasText:
-          'Har du mottatt et brev fra Nav klageinstans eller en annen enhet i Nav om at saken din er sendt til Nav klageinstans?',
+          'Har du mottatt et brev fra Klageinstans eller en annen enhet i Nav om at saken din er sendt til Klageinstans?',
       });
 
       await fieldset.waitFor();
