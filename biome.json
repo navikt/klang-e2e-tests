@@ -1,11 +1,10 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.2/schema.json",
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
       "nursery": {
-        "noSecrets": "off",
         "useExplicitType": "off"
       },
       "correctness": {
@@ -36,6 +35,9 @@
       },
       "performance": {
         "useTopLevelRegex": "off"
+      },
+      "security": {
+        "noSecrets": "off"
       }
     }
   },
