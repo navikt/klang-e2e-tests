@@ -7,10 +7,10 @@ inputs:
     required: true
   nais_management_project_id:
     description: 'Project ID for nais/logins'
-    required: true
+    required: false
   nais_workload_identity_provider:
     description: 'Identity provider for nais/login'
-    required: true
+    required: false
   e2e_tag:
     description: 'Tag for E2E image'
     required: false
@@ -40,10 +40,8 @@ runs:
       id: image-registry
       uses: nais/login@v0
       with:
-        project_id: ${{ inputs.nais_management_project_id }}
-        identity_provider: ${{ inputs.nais_workload_identity_provider }}
         team: klage
-    
+
     - name: Generate UUID
       id: uuid
       shell: bash
