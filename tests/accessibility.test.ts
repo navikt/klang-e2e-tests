@@ -12,65 +12,62 @@ const CASES = [
   { type: Type.Ankeettersendelse, ytelse: Innsendingsytelse.FORERHUND },
 ];
 
-test.describe
-  .only('Tilgjengelighet', () => {
-    test.describe('Innlogget', () => {
-      CASES.forEach(async ({ type, ytelse }) => {
-        test(type, async ({ page, klangPage }) => {
-          await klangPage.createLoggedInCase(type, ytelse);
+test.describe('Tilgjengelighet innlogget', () => {
+  CASES.forEach(({ type, ytelse }) => {
+    test(type, async ({ page, klangPage }) => {
+      await klangPage.createLoggedInCase(type, ytelse);
 
-          const axeBuilder = new AxeBuilder({ page });
+      const axeBuilder = new AxeBuilder({ page });
 
-          expect((await axeBuilder.analyze()).violations).toEqual([]);
-          await klangPage.insertBegrunnelse('Reason.');
-          await klangPage.insertVedtaksdato('01.02.2025');
+      expect((await axeBuilder.analyze()).violations).toEqual([]);
+      await klangPage.insertBegrunnelse('Reason.');
+      await klangPage.insertVedtaksdato('01.02.2025');
 
-          if (type === Type.Klageettersendelse) {
-            await klangPage.checkHarMottattBrevCheckbox();
-          }
+      if (type === Type.Klageettersendelse) {
+        await klangPage.checkHarMottattBrevCheckbox();
+      }
 
-          await klangPage.goToOppsummering();
-          expect(page.url().endsWith('/oppsummering')).toBe(true);
-          expect((await axeBuilder.analyze()).violations).toEqual([]);
+      await klangPage.goToOppsummering();
+      expect(page.url().endsWith('/oppsummering')).toBe(true);
+      expect((await axeBuilder.analyze()).violations).toEqual([]);
 
-          await klangPage.sendInn();
-          expect(page.url().endsWith('/kvittering')).toBe(true);
-          expect((await axeBuilder.analyze()).violations).toEqual([]);
-        });
-      });
-    });
-
-    test.describe('Uinnlogget', () => {
-      test.use({ storageState: { cookies: [], origins: [] } });
-
-      CASES.forEach(async ({ type, ytelse }) => {
-        test(type, async ({ page, klangPage }) => {
-          await klangPage.createCase(type, ytelse);
-
-          const axeBuilder = new AxeBuilder({ page });
-
-          expect((await axeBuilder.analyze()).violations).toEqual([]);
-          await klangPage.insertIdNumber(testUser.id);
-          await klangPage.insertFirstName('First');
-          await klangPage.insertLastName('Last');
-          await klangPage.insertBegrunnelse('Reason.');
-          await klangPage.insertVedtaksdato('01.02.2025');
-
-          if (type === Type.Klageettersendelse) {
-            await klangPage.checkHarMottattBrevCheckbox();
-          }
-
-          await klangPage.goToOppsummering();
-
-          expect(page.url().endsWith('/oppsummering')).toBe(true);
-          expect((await axeBuilder.analyze()).violations).toEqual([]);
-
-          await klangPage.checkJegForstårCheckbox();
-          await klangPage.downloadPdf();
-
-          expect(page.url().endsWith('/innsending')).toBe(true);
-          expect((await axeBuilder.analyze()).violations).toEqual([]);
-        });
-      });
+      await klangPage.sendInn();
+      expect(page.url().endsWith('/kvittering')).toBe(true);
+      expect((await axeBuilder.analyze()).violations).toEqual([]);
     });
   });
+});
+
+test.describe('Tilgjengelighet uinnlogget', () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  CASES.forEach(({ type, ytelse }) => {
+    test(type, async ({ page, klangPage }) => {
+      await klangPage.createCase(type, ytelse);
+
+      const axeBuilder = new AxeBuilder({ page });
+
+      expect((await axeBuilder.analyze()).violations).toEqual([]);
+      await klangPage.insertIdNumber(testUser.id);
+      await klangPage.insertFirstName('First');
+      await klangPage.insertLastName('Last');
+      await klangPage.insertBegrunnelse('Reason.');
+      await klangPage.insertVedtaksdato('01.02.2025');
+
+      if (type === Type.Klageettersendelse) {
+        await klangPage.checkHarMottattBrevCheckbox();
+      }
+
+      await klangPage.goToOppsummering();
+
+      expect(page.url().endsWith('/oppsummering')).toBe(true);
+      expect((await axeBuilder.analyze()).violations).toEqual([]);
+
+      await klangPage.checkJegForstårCheckbox();
+      await klangPage.downloadPdf();
+
+      expect(page.url().endsWith('/innsending')).toBe(true);
+      expect((await axeBuilder.analyze()).violations).toEqual([]);
+    });
+  });
+});
