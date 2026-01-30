@@ -12,6 +12,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@slack/bolt": "4.6.0",
     "playwright": "1.57.0"
   },
