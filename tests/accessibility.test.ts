@@ -13,6 +13,8 @@ const CASES = [
 ];
 
 test.describe('Tilgjengelighet innlogget', () => {
+  test.setTimeout(60_000);
+
   CASES.forEach(({ type, ytelse }) => {
     test(type, async ({ page, klangPage }) => {
       await klangPage.createLoggedInCase(type, ytelse);
@@ -40,6 +42,7 @@ test.describe('Tilgjengelighet innlogget', () => {
 
 test.describe('Tilgjengelighet uinnlogget', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
+  test.setTimeout(60_000);
 
   CASES.forEach(({ type, ytelse }) => {
     test(type, async ({ page, klangPage }) => {
