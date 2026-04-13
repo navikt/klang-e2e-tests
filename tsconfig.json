@@ -9,8 +9,8 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "es2015",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "resolveJsonModule": false,
     "isolatedModules": true,
     "noEmit": true,
@@ -18,11 +18,9 @@
     "outDir": "./dist",
 
     /* Paths */
-    "baseUrl": "./",
     "paths": {
-      "@app/*": ["*"]
-    },
-    "incremental": true
+      "@app/*": ["./*"]
+    }
   },
   "include": ["./"]
 }
