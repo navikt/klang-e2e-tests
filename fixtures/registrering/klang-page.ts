@@ -282,7 +282,7 @@ export class KlangPage {
   async checkHarMottattBrevCheckbox(check = true) {
     this.#harMottattBrev = check;
 
-    const legend = this.page.getByRole('group', {
+    const legend = this.page.getByRole('radiogroup', {
       name: 'Har du mottatt et brev fra Klageinstans eller en annen enhet i Nav om at saken din er sendt til Klageinstans?',
     });
 
@@ -299,7 +299,7 @@ export class KlangPage {
   }
 
   verifyMottattBrev() {
-    const legend = this.page.getByRole('group', {
+    const legend = this.page.getByRole('radiogroup', {
       name: 'Har du mottatt et brev fra Klageinstans eller en annen enhet i Nav om at saken din er sendt til Klageinstans?',
     });
 
