@@ -3,8 +3,8 @@ import { UI_DOMAIN } from '@app/config/env';
 import { dismissConsentBanner } from '@app/fixtures/consent';
 import { clearIfNotEmpty, finishedRequest, formatId } from '@app/fixtures/helpers';
 import type { Innsendingsytelse } from '@app/fixtures/innsendingsytelse';
-import { logIn, verifyLogin } from '@app/fixtures/registrering/login-page';
-import { testUser } from '@app/testdata/user';
+import { checkLoggedIn, logIn } from '@app/fixtures/registrering/login';
+import { TEST_USER } from '@app/testdata/user';
 import type { BrowserContext, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
@@ -16,8 +16,6 @@ export enum Type {
 }
 
 export class KlangPage {
-  #loggedIn = false;
-
   #ytelse: Innsendingsytelse | null;
   #type: Type | null;
 
@@ -44,7 +42,12 @@ export class KlangPage {
     dismissConsentBanner(page, context);
   }
 
-  setDeepLinkParams(internalSaksnummer: string, sakSakstype: string, sakFagsystem: string, harMottattBrev: boolean) {
+  async setDeepLinkParams(
+    internalSaksnummer: string,
+    sakSakstype: string,
+    sakFagsystem: string,
+    harMottattBrev: boolean,
+  ) {
     this.#internalSaksnummer = internalSaksnummer;
     this.#sakSakstype = sakSakstype;
     this.#sakFagsystem = sakFagsystem;
@@ -57,7 +60,21 @@ export class KlangPage {
       ka: harMottattBrev,
     });
 
-    return this.page.goto(`${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}?${params}`);
+    if (SAK_REGEX.test(this.page.url())) {
+      // Logged in with an active case — delete it first, then navigate.
+      // The app won't create a new case if one already exists.
+      await this.deleteCase();
+      await this.#navigateAndWaitForBegrunnelse(
+        `${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}?${params}`,
+        `${UI_DOMAIN}/nb/sak/**/begrunnelse`,
+      );
+    } else {
+      // Not logged in — navigate and wait for client-side redirect to /begrunnelse.
+      await this.#navigateAndWaitForBegrunnelse(
+        `${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}?${params}`,
+        `${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}/begrunnelse`,
+      );
+    }
   }
 
   async createCase(
@@ -95,7 +112,6 @@ export class KlangPage {
     this.#sakFagsystem = sakFagsystem;
     this.#sakSakstype = sakSakstype;
     this.#harMottattBrev = harMottattBrev;
-    this.#loggedIn = true;
 
     await this.#ensureNewLoggedInCase();
   }
@@ -115,13 +131,35 @@ export class KlangPage {
   }
 
   async #createLoggedInCase(params: string) {
-    await this.page.goto(`${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}?${params}`);
-
-    await this.page.waitForURL(`${UI_DOMAIN}/nb/sak/**/begrunnelse`);
+    await this.#navigateAndWaitForBegrunnelse(
+      `${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}?${params}`,
+      `${UI_DOMAIN}/nb/sak/**/begrunnelse`,
+    );
   }
 
-  setLoggedIn(loggedIn: boolean) {
-    this.#loggedIn = loggedIn;
+  /**
+   * Navigate to a URL and wait for the app to redirect to /begrunnelse.
+   * Retries the navigation if the redirect doesn't happen (dev server may fail to serve JS bundle under load).
+   */
+  async #navigateAndWaitForBegrunnelse(gotoUrl: string, expectedUrlPattern: string) {
+    const MAX_ATTEMPTS = 5;
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      await this.page.goto(gotoUrl, { waitUntil: 'commit' });
+
+      try {
+        await this.page.waitForURL(expectedUrlPattern, { timeout: 15_000 });
+        await this.page.locator('main').waitFor({ timeout: 5_000 });
+        return;
+      } catch {
+        if (attempt === MAX_ATTEMPTS) {
+          throw new Error(
+            `Navigation to ${expectedUrlPattern} failed after ${MAX_ATTEMPTS} attempts. ` +
+              `Current URL: ${this.page.url()}`,
+          );
+        }
+      }
+    }
   }
 
   insertIdNumber(idNumber: string) {
@@ -142,10 +180,12 @@ export class KlangPage {
   async insertSaksnummer(saksnummer: string) {
     this.#userSaksnummer = saksnummer;
 
+    const isLoggedIn = await checkLoggedIn(this.page);
+
     const apiUrl = '**/api/klanker/**/usersaksnummer';
 
-    await clearIfNotEmpty(this.page, this.page.getByLabel('Saksnummer (valgfri)'), apiUrl, this.#loggedIn);
-    const requestPromise = this.#loggedIn ? this.page.waitForRequest(apiUrl) : null;
+    await clearIfNotEmpty(this.page, this.page.getByLabel('Saksnummer (valgfri)'), apiUrl, isLoggedIn);
+    const requestPromise = isLoggedIn ? this.page.waitForRequest(apiUrl) : null;
 
     await this.page.getByLabel('Saksnummer (valgfri)').fill(saksnummer);
     await this.page.keyboard.press('Tab');
@@ -165,7 +205,9 @@ export class KlangPage {
   async goToOppsummering() {
     await this.page.getByText('Gå videre').click();
 
-    if (this.#loggedIn) {
+    const isLoggedIn = await checkLoggedIn(this.page);
+
+    if (isLoggedIn) {
       return this.page.waitForURL(`${UI_DOMAIN}/nb/sak/**/oppsummering`);
     }
 
@@ -173,15 +215,15 @@ export class KlangPage {
   }
 
   async downloadPdf() {
-    if (this.#loggedIn) {
+    const isLoggedIn = await checkLoggedIn(this.page);
+
+    if (isLoggedIn) {
       return this.downloadLoggedInPdf();
     }
 
-    const downloadPromise = this.page.waitForEvent('download');
-    await this.page.getByText('Last ned / skriv ut').click();
-    const download = await downloadPromise;
+    const download = await this.#waitForDownload();
 
-    const name = await download.suggestedFilename();
+    const name = download.suggestedFilename();
 
     if (this.#type === Type.Klage || this.#type === Type.Anke) {
       expect(name).toContain(
@@ -192,6 +234,24 @@ export class KlangPage {
     await this.page.waitForURL(`${UI_DOMAIN}/nb/${this.#type}/${this.#ytelse}/innsending`);
 
     this.verifyHvaGjørDuNå();
+  }
+
+  async #waitForDownload() {
+    const MAX_ATTEMPTS = 3;
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        const downloadPromise = this.page.waitForEvent('download', { timeout: 15_000 });
+        await this.page.getByText('Last ned / skriv ut').click();
+        return await downloadPromise;
+      } catch {
+        if (attempt === MAX_ATTEMPTS) {
+          throw new Error(`Download failed after ${MAX_ATTEMPTS} attempts`);
+        }
+      }
+    }
+
+    throw new Error('Download failed');
   }
 
   verifyHvaGjørDuNå() {
@@ -226,9 +286,11 @@ export class KlangPage {
         ? 'Vedtaksdato (valgfri)'
         : 'Dato for klagevedtaket fra Klageinstans';
 
-    await clearIfNotEmpty(this.page, this.page.getByLabel(label), '**/api/klanker/**/vedtakdate', this.#loggedIn);
+    const isLoggedIn = await checkLoggedIn(this.page);
 
-    const requestPromise = this.#loggedIn ? this.page.waitForRequest('**/api/klanker/**/vedtakdate') : null;
+    await clearIfNotEmpty(this.page, this.page.getByLabel(label), '**/api/klanker/**/vedtakdate', isLoggedIn);
+
+    const requestPromise = isLoggedIn ? this.page.waitForRequest('**/api/klanker/**/vedtakdate') : null;
 
     await this.page.getByLabel(label).fill(vedtaksdato);
     await this.page.keyboard.press('Tab');
@@ -241,8 +303,10 @@ export class KlangPage {
   async insertBegrunnelse(begrunnelse: string) {
     this.#begrunnelse = begrunnelse;
 
+    const isLoggedIn = await checkLoggedIn(this.page);
+
     const apiUrl = '**/api/klanker/**/fritekst';
-    const requestPromise = this.#loggedIn ? this.page.waitForRequest(apiUrl) : null;
+    const requestPromise = isLoggedIn ? this.page.waitForRequest(apiUrl) : null;
 
     const label = () => {
       switch (this.#type) {
@@ -258,7 +322,7 @@ export class KlangPage {
       }
     };
 
-    await clearIfNotEmpty(this.page, this.page.getByLabel(label()), apiUrl, this.#loggedIn);
+    await clearIfNotEmpty(this.page, this.page.getByLabel(label()), apiUrl, isLoggedIn);
     await this.page.getByLabel(label()).fill(begrunnelse);
     await this.page.keyboard.press('Tab');
 
@@ -286,41 +350,38 @@ export class KlangPage {
       name: 'Har du mottatt et brev fra Klageinstans eller en annen enhet i Nav om at saken din er sendt til Klageinstans?',
     });
 
-    const jaChecked = await legend.getByLabel('Ja').isChecked();
-    const neiChecked = await legend.getByLabel('Nei').isChecked();
-
-    if (check && !jaChecked) {
-      return legend.getByLabel('Ja').check();
-    }
-
-    if (!(check || neiChecked)) {
-      return legend.getByLabel('Nei').check();
+    if (check) {
+      await legend.getByLabel('Ja').click();
+    } else {
+      await legend.getByLabel('Nei').click();
     }
   }
 
-  verifyMottattBrev() {
+  async verifyMottattBrev() {
     const legend = this.page.getByRole('radiogroup', {
       name: 'Har du mottatt et brev fra Klageinstans eller en annen enhet i Nav om at saken din er sendt til Klageinstans?',
     });
 
     if (this.#harMottattBrev) {
-      expect(legend.getByLabel('Ja')).toBeChecked();
+      await expect(legend.getByLabel('Ja')).toBeChecked();
     } else if (this.#harMottattBrev === false) {
-      expect(legend.getByLabel('Nei')).toBeChecked();
+      await expect(legend.getByLabel('Nei')).toBeChecked();
     } else {
-      expect(legend.getByLabel('Ja')).not.toBeChecked();
-      expect(legend.getByLabel('Nei')).not.toBeChecked();
+      await expect(legend.getByLabel('Ja')).not.toBeChecked();
+      await expect(legend.getByLabel('Nei')).not.toBeChecked();
     }
   }
 
   async verifyOppsummering() {
-    if (this.#loggedIn) {
+    const isLoggedIn = await checkLoggedIn(this.page);
+
+    if (isLoggedIn) {
       const personopplysninger = this.page.getByRole('heading', { name: 'Personopplysninger' });
       const section = this.page.locator('section').filter({ has: personopplysninger });
 
-      await expect(section.getByText(formatId(testUser.id))).toBeVisible();
-      await expect(section.getByText(testUser.firstName)).toBeVisible();
-      await expect(section.getByText(testUser.lastName)).toBeVisible();
+      await expect(section.getByText(formatId(TEST_USER.id))).toBeVisible();
+      await expect(section.getByText(TEST_USER.firstName)).toBeVisible();
+      await expect(section.getByText(TEST_USER.lastName)).toBeVisible();
     } else {
       await expect(this.page.getByText(formatId(this.#idNumber))).toBeVisible();
       await expect(this.page.getByText(this.#firstName)).toBeVisible();
@@ -347,28 +408,15 @@ export class KlangPage {
   async verifySaksnummer() {
     if (this.#internalSaksnummer !== null) {
       const section = this.page.locator('section').filter({ hasText: 'Saksnummer' });
-      await section.waitFor();
 
-      expect(section.getByText(this.#internalSaksnummer)).toBeVisible();
+      await expect(section.getByText(this.#internalSaksnummer)).toBeVisible({ timeout: 10_000 });
     } else {
       expect(await this.page.getByLabel('Saksnummer (valgfri)').inputValue()).toBe(this.#userSaksnummer);
     }
   }
 
   async verifyBegrunnelse() {
-    await this.page.reload();
-
-    if (!this.#loggedIn) {
-      expect(await this.page.getByLabel('Fødselsnummer, D-nummer eller NPID').inputValue()).toBe(this.#idNumber);
-      expect(await this.page.getByLabel('For- og mellomnavn').inputValue()).toBe(this.#firstName);
-      expect(await this.page.getByLabel('Etternavn').inputValue()).toBe(this.#lastName);
-
-      if (this.#skalSendeMedVedlegg) {
-        expect(this.page.getByRole('checkbox', { name: 'Jeg skal sende med vedlegg.' })).toBeChecked();
-      } else {
-        expect(this.page.getByRole('checkbox', { name: 'Jeg skal sende med vedlegg.' })).not.toBeChecked();
-      }
-    }
+    await this.verifyPersonalInfo();
 
     await this.verifySaksnummer();
 
@@ -389,10 +437,10 @@ export class KlangPage {
       await fieldset.waitFor();
 
       if (this.#harMottattBrev === null) {
-        expect(fieldset.getByText('Ja')).not.toBeChecked();
-        expect(fieldset.getByText('Nei')).not.toBeChecked();
+        await expect(fieldset.getByLabel('Ja')).not.toBeChecked();
+        await expect(fieldset.getByLabel('Nei')).not.toBeChecked();
       } else {
-        expect(fieldset.getByText(this.#harMottattBrev ? 'Ja' : 'Nei')).toBeChecked();
+        await expect(fieldset.getByLabel(this.#harMottattBrev ? 'Ja' : 'Nei')).toBeChecked();
       }
     }
 
@@ -404,15 +452,32 @@ export class KlangPage {
       expect(await this.page.getByLabel('Har du noe å legge til?').inputValue()).toBe(this.#begrunnelse);
     }
 
+    const isLoggedIn = await checkLoggedIn(this.page);
+
+    if (!isLoggedIn) {
+      const vedleggCheckbox = this.page.getByRole('checkbox', { name: 'Jeg skal sende med vedlegg.' });
+
+      if (this.#skalSendeMedVedlegg) {
+        await expect(vedleggCheckbox).toBeChecked();
+      } else {
+        await expect(vedleggCheckbox).not.toBeChecked();
+      }
+    }
+
     if (this.#hasUploadedAttachments) {
-      expect(this.page.getByText('Vedlegg (3)')).toBeVisible;
-      expect(this.page.getByText('dummy.pdf')).toBeVisible;
-      expect(this.page.getByText('logo.png')).toBeVisible;
-      expect(this.page.getByText('logo.jpg')).toBeVisible;
+      await this.verifyAttachments();
     }
   }
 
   async uploadAttachments() {
+    const isLoggedIn = await checkLoggedIn(this.page);
+
+    if (!isLoggedIn) {
+      throw new Error(
+        'uploadAttachments() can only be used when logged in. Use checkVedleggCheckbox() for unauthenticated cases.',
+      );
+    }
+
     await this.deleteAllVedlegg();
 
     await this.page
@@ -422,6 +487,16 @@ export class KlangPage {
         path.join(__dirname, '..', '..', 'testdata', 'logo.png'),
         path.join(__dirname, '..', '..', 'testdata', 'logo.jpg'),
       ]);
+
+    // Wait for all uploads to complete
+    await this.verifyAttachments();
+  }
+
+  async verifyAttachments() {
+    await expect(this.page.getByText('Vedlegg (3)')).toBeVisible({ timeout: 15_000 });
+    await expect(this.page.getByText('dummy.pdf')).toBeVisible();
+    await expect(this.page.getByText('logo.png')).toBeVisible();
+    await expect(this.page.getByText('logo.jpg')).toBeVisible();
 
     this.#hasUploadedAttachments = true;
   }
@@ -449,7 +524,7 @@ export class KlangPage {
 
     await this.page.getByTitle('Bekreft sletting').click();
     await finishedRequest(requestPromise);
-    await this.page.waitForURL('https://login.microsoftonline.com/**');
+    await this.page.waitForURL('https://login.microsoftonline.com/**', { timeout: 30_000 });
   }
 
   async sendInn() {
@@ -469,18 +544,54 @@ export class KlangPage {
     expect(this.page.getByText('Nå er resten vårt ansvar')).toBeVisible();
   }
 
-  private async downloadLoggedInPdf() {
-    const pagePromise = this.context.waitForEvent('page', { timeout: 10000 });
-
-    if (this.#type === Type.Klage) {
-      await this.page.getByText('Se og last ned klagen din').click();
-    } else if (this.#type === Type.Anke) {
-      await this.page.getByText('Se og last ned anken din').click();
-    } else if (this.#type === Type.Klageettersendelse || this.#type === Type.Ankeettersendelse) {
-      await this.page.getByText('Se og last ned den ettersendte dokumentasjonen din').click();
+  private get pdfLinkText(): string {
+    switch (this.#type) {
+      case Type.Klage:
+        return 'Se og last ned klagen din';
+      case Type.Anke:
+        return 'Se og last ned anken din';
+      case Type.Klageettersendelse:
+      case Type.Ankeettersendelse:
+        return 'Se og last ned den ettersendte dokumentasjonen din';
     }
 
-    await pagePromise;
+    throw new Error(`Unknown type: ${this.#type}`);
+  }
+
+  private async downloadLoggedInPdf() {
+    const MAX_ATTEMPTS = 3;
+
+    const link = this.page.getByText(this.pdfLinkText);
+
+    // Wait for the link to appear — PDF generation may be async
+    await link.waitFor({ state: 'visible', timeout: 15_000 });
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        // The PDF endpoint may either open in a new tab or trigger a download,
+        // depending on server response headers. Listen for both events.
+        const pagePromise = this.context.waitForEvent('page', { timeout: 10_000 });
+        const downloadPromise = this.page.waitForEvent('download', { timeout: 10_000 });
+
+        await link.click();
+
+        const result = await Promise.race([
+          pagePromise.then((page) => ({ type: 'page' as const, page })),
+          downloadPromise.then((download) => ({ type: 'download' as const, download })),
+        ]);
+
+        if (result.type === 'page') {
+          await result.page.waitForLoadState('load', { timeout: 10_000 });
+          await result.page.close();
+        }
+
+        return;
+      } catch {
+        if (attempt === MAX_ATTEMPTS) {
+          throw new Error(`Logged-in PDF download failed after ${MAX_ATTEMPTS} attempts`);
+        }
+      }
+    }
   }
 
   async deleteAllVedlegg() {
@@ -498,17 +609,60 @@ export class KlangPage {
     }
   }
 
-  logIn = (path?: string) => logIn(this.page, testUser.id, path);
+  async logIn() {
+    await logIn(this.page, TEST_USER.id);
 
-  async verifyLogin() {
-    await verifyLogin(this.page, testUser);
-    this.#loggedIn = true;
+    // After login, create a fresh case. Use the same create→delete→create pattern
+    // as #ensureNewLoggedInCase to handle stale backend state (e.g. leftover case
+    // from global-setup or previous test runs).
+    const params = toQueryParams({
+      saksnummer: this.#internalSaksnummer,
+      sakstype: this.#sakSakstype,
+      fagsystem: this.#sakFagsystem,
+      ka: this.#harMottattBrev,
+    });
+
+    await this.#createLoggedInCase(params);
+    await this.deleteCase();
+    await this.#createLoggedInCase(params);
+
+    const isLoggedIn = await checkLoggedIn(this.page);
+
+    if (isLoggedIn) {
+      this.#idNumber = TEST_USER.id;
+      this.#firstName = TEST_USER.firstName;
+      this.#lastName = TEST_USER.lastName;
+    }
+
+    await this.verifyPersonalInfo();
   }
+
+  async verifyPersonalInfo() {
+    const isLoggedIn = await checkLoggedIn(this.page);
+
+    if (isLoggedIn) {
+      const firstNameSection = this.getSectionByHeading('For- og mellomnavn');
+      await firstNameSection.waitFor({ timeout: 15_000 });
+      const lastNameSection = this.getSectionByHeading('Etternavn');
+      const idNumberSection = this.getSectionByHeading('Fødselsnummer, D-nummer eller NPID');
+
+      await expect(firstNameSection).toContainText(this.#firstName);
+      await expect(lastNameSection).toContainText(this.#lastName);
+      await expect(idNumberSection).toContainText(formatId(this.#idNumber));
+    } else {
+      await expect(this.page.getByLabel('Fødselsnummer, D-nummer eller NPID')).toBeVisible();
+      expect(await this.page.getByLabel('Fødselsnummer, D-nummer eller NPID').inputValue()).toBe(this.#idNumber);
+      expect(await this.page.getByLabel('For- og mellomnavn').inputValue()).toBe(this.#firstName);
+      expect(await this.page.getByLabel('Etternavn').inputValue()).toBe(this.#lastName);
+    }
+  }
+
+  private getSectionByHeading = (heading: string) =>
+    this.page.locator('section', { has: this.page.getByRole('heading', { name: heading }) });
 }
 
-const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
-const REGISTRERING = `http(?:s?)://(?:.+)/sak/(${UUID})`;
-export const SAK_REGEX = new RegExp(`${REGISTRERING}`);
+const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
+export const SAK_REGEX = new RegExp(`http(?:s?)://(?:.+)/sak/(${UUID.source})`);
 
 interface DeepLink {
   saksnummer: string | null;

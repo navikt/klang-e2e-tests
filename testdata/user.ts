@@ -4,7 +4,7 @@ export interface User {
   lastName: string;
 }
 
-export const testUser: User = {
+export const TEST_USER: User = {
   id: '17907898091',
   firstName: 'AKTUELL',
   lastName: 'PAUSEFISK',
