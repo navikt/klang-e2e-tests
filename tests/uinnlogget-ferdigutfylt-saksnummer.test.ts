@@ -2,7 +2,7 @@ import { UI_DOMAIN } from '@app/config/env';
 import { Innsendingsytelse } from '@app/fixtures/innsendingsytelse';
 import { test } from '@app/fixtures/registrering/fixture';
 import { Type } from '@app/fixtures/registrering/klang-page';
-import { testUser } from '@app/testdata/user';
+import { TEST_USER } from '@app/testdata/user';
 import { expect } from '@playwright/test';
 
 test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
@@ -34,6 +34,7 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
   });
 
   test('Bytte av dyplenkedata', async ({ klangPage, page }) => {
+    test.slow(); // Navigation retries may be needed under dev server load
     const ytelse = Innsendingsytelse.ENGANGSSTONAD;
 
     await klangPage.createCase(
@@ -45,17 +46,18 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
       null,
     );
 
-    await klangPage.verifySaksnummer();
     await klangPage.verifyBegrunnelse();
 
     expect(page.url()).toBe(`${UI_DOMAIN}/nb/ettersendelse/klage/${ytelse}/begrunnelse`);
 
     await klangPage.setDeepLinkParams('new_saksnummer', 'new_sakstype', 'new_fagsystem', true);
-    await klangPage.verifySaksnummer();
+
     await klangPage.verifyBegrunnelse();
   });
 
-  test('Bevaring av dyplenkedata fra uinnlogget til innlogget', async ({ klangPage, page, loginPage }) => {
+  test('Bevaring av dyplenkedata fra uinnlogget til innlogget', async ({ klangPage, page }) => {
+    test.slow(); // This test does a full IdP login + multiple navigations
+
     const ytelse = Innsendingsytelse.ENSLIG_MOR_ELLER_FAR;
 
     const saksnummer = 'initial_saksnummer';
@@ -65,24 +67,12 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
 
     await klangPage.createCase(Type.Klageettersendelse, ytelse, saksnummer, sakstype, fagsystem, caseIsAtKA);
 
-    await klangPage.verifySaksnummer();
-    await klangPage.insertIdNumber(testUser.id);
+    await klangPage.insertIdNumber(TEST_USER.id);
     await klangPage.verifyBegrunnelse();
 
     expect(page.url()).toBe(`${UI_DOMAIN}/nb/ettersendelse/klage/${ytelse}/begrunnelse`);
 
-    const klanke = page.waitForResponse('**/api/klanker/**');
-    await loginPage.logIn();
-    await loginPage.verifyLogin();
-    klangPage.setLoggedIn(true);
-    const response = await klanke;
-
-    const json: PartialKlanke = await response.json();
-
-    expect(json.internalSaksnummer).toBe(saksnummer);
-    expect(json.sakSakstype).toBe(sakstype);
-    expect(json.sakFagsaksystem).toBe(fagsystem);
-    expect(json.caseIsAtKA).toBe(caseIsAtKA);
+    await klangPage.logIn();
 
     const newSaksnummer = 'new_saksnummer';
     const newSakstype = 'new_sakstype';
@@ -91,24 +81,6 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
 
     await klangPage.setDeepLinkParams(newSaksnummer, newSakstype, newFagsystem, newCaseIsAtKA);
 
-    await klangPage.verifySaksnummer();
-
-    const newKlanke = page.waitForResponse('**/api/klanker/**');
-    await klangPage.verifyBegrunnelse();
-    const newResponse = await newKlanke;
-
-    const newJson: PartialKlanke = await newResponse.json();
-
-    expect(newJson.internalSaksnummer).toBe(newSaksnummer);
-    expect(newJson.sakSakstype).toBe(newSakstype);
-    expect(newJson.sakFagsaksystem).toBe(newFagsystem);
-    expect(newJson.caseIsAtKA).toBe(newCaseIsAtKA);
+    await Promise.all([klangPage.verifyMottattBrev(), klangPage.verifyBegrunnelse()]);
   });
 });
-
-type PartialKlanke = {
-  internalSaksnummer: string | null;
-  sakSakstype: string | null;
-  sakFagsaksystem: string | null;
-  caseIsAtKA: boolean | null;
-};

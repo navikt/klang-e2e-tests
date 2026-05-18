@@ -1,7 +1,7 @@
 import { Innsendingsytelse } from '@app/fixtures/innsendingsytelse';
 import { test } from '@app/fixtures/registrering/fixture';
 import { Type } from '@app/fixtures/registrering/klang-page';
-import { testUser } from '@app/testdata/user';
+import { TEST_USER } from '@app/testdata/user';
 
 test.describe('Uinnlogget', () => {
   // Don't reuse logged in state for these tests.
@@ -9,7 +9,7 @@ test.describe('Uinnlogget', () => {
 
   test('Klage', async ({ klangPage }) => {
     await klangPage.createCase(Type.Klage, Innsendingsytelse.BARNEBIDRAG_OG_BIDRAGSFORSKUDD);
-    await klangPage.insertIdNumber(testUser.id);
+    await klangPage.insertIdNumber(TEST_USER.id);
     await klangPage.insertFirstName('Vedtaksuenig');
     await klangPage.insertLastName('Sytersen');
     await klangPage.insertVedtaksdato('01.02.2025');
@@ -28,7 +28,7 @@ test.describe('Uinnlogget', () => {
 
   test('Anke', async ({ klangPage }) => {
     await klangPage.createCase(Type.Anke, Innsendingsytelse.BARNEPENSJON);
-    await klangPage.insertIdNumber(testUser.id);
+    await klangPage.insertIdNumber(TEST_USER.id);
     await klangPage.insertFirstName('Vedtaksuenig');
     await klangPage.insertLastName('Sytersen');
     await klangPage.insertVedtaksdato('01.02.2025');
@@ -47,7 +47,7 @@ test.describe('Uinnlogget', () => {
 
   test('Klageettersendelse', async ({ klangPage }) => {
     await klangPage.createCase(Type.Klageettersendelse, Innsendingsytelse.BARNETRYGD);
-    await klangPage.insertIdNumber(testUser.id);
+    await klangPage.insertIdNumber(TEST_USER.id);
     await klangPage.insertFirstName('Vedtaksuenig');
     await klangPage.insertLastName('Sytersen');
     await klangPage.insertVedtaksdato('01.02.2025');
@@ -69,7 +69,7 @@ test.describe('Uinnlogget', () => {
 
   test('Ankeettersendelse', async ({ klangPage }) => {
     await klangPage.createCase(Type.Ankeettersendelse, Innsendingsytelse.BIDRAGSFORSKUDD);
-    await klangPage.insertIdNumber(testUser.id);
+    await klangPage.insertIdNumber(TEST_USER.id);
     await klangPage.insertFirstName('Vedtaksuenig');
     await klangPage.insertLastName('Sytersen');
     await klangPage.insertVedtaksdato('01.02.2025');
@@ -89,8 +89,9 @@ test.describe('Uinnlogget', () => {
   });
 
   test('Uinnlogget til innlogget', async ({ klangPage }) => {
+    test.slow(); // Full IdP login + create/delete/create case pattern
     await klangPage.createCase(Type.Klage, Innsendingsytelse.BIDRAG_TIL_SARLIGE_UTGIFTER);
-    await klangPage.insertIdNumber(testUser.id);
+    await klangPage.insertIdNumber(TEST_USER.id);
     await klangPage.insertFirstName('Vedtaksuenig');
     await klangPage.insertLastName('Sytersen');
     await klangPage.insertVedtaksdato('01.02.2025');
@@ -101,7 +102,6 @@ test.describe('Uinnlogget', () => {
     await klangPage.verifyBegrunnelse();
 
     await klangPage.logIn();
-    await klangPage.verifyLogin();
 
     await klangPage.verifyBegrunnelse();
   });

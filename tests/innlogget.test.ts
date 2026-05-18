@@ -19,6 +19,7 @@ test.describe('Innlogget', () => {
   });
 
   test('Anke', async ({ klangPage }) => {
+    test.slow();
     await klangPage.createLoggedInCase(Type.Anke, Innsendingsytelse.ARBEID_MED_STOTTE);
 
     await klangPage.insertVedtaksdato('01.02.2025');
@@ -36,6 +37,7 @@ test.describe('Innlogget', () => {
   });
 
   test('Klageettersendelse', async ({ klangPage }) => {
+    test.slow();
     await klangPage.createLoggedInCase(Type.Klageettersendelse, Innsendingsytelse.ARBEIDSAVKLARINGSPENGER);
 
     await klangPage.insertVedtaksdato('01.02.2025');
@@ -54,6 +56,7 @@ test.describe('Innlogget', () => {
   });
 
   test('Ankeettersendelse', async ({ klangPage }) => {
+    test.slow();
     await klangPage.createLoggedInCase(Type.Ankeettersendelse, Innsendingsytelse.ARBEIDSFORBEREDENDE_TRENING);
 
     await klangPage.insertVedtaksdato('01.02.2025');

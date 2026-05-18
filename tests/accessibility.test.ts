@@ -1,7 +1,7 @@
 import { Innsendingsytelse } from '@app/fixtures/innsendingsytelse';
 import { test } from '@app/fixtures/registrering/fixture';
 import { Type } from '@app/fixtures/registrering/klang-page';
-import { testUser } from '@app/testdata/user';
+import { TEST_USER } from '@app/testdata/user';
 import AxeBuilder from '@axe-core/playwright';
 import { expect } from 'playwright/test';
 
@@ -51,7 +51,7 @@ test.describe('Tilgjengelighet uinnlogget', () => {
       const axeBuilder = new AxeBuilder({ page });
 
       expect((await axeBuilder.analyze()).violations).toEqual([]);
-      await klangPage.insertIdNumber(testUser.id);
+      await klangPage.insertIdNumber(TEST_USER.id);
       await klangPage.insertFirstName('First');
       await klangPage.insertLastName('Last');
       await klangPage.insertBegrunnelse('Reason.');

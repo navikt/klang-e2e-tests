@@ -1,7 +1,7 @@
-import { DEV_DOMAIN, USE_LOCAL } from '@app/config/env';
+import { DEV_DOMAIN, UI_DOMAIN, USE_LOCAL } from '@app/config/env';
 import { dismissConsentBanner } from '@app/fixtures/consent';
-import { logIn, verifyLogin } from '@app/fixtures/registrering/login-page';
-import { testUser } from '@app/testdata/user';
+import { logIn } from '@app/fixtures/registrering/login';
+import { TEST_USER } from '@app/testdata/user';
 import type { Page } from '@playwright/test';
 import { chromium } from '@playwright/test';
 import type { FullConfig } from '@playwright/test/reporter';
@@ -10,10 +10,12 @@ const globalSetup = async (config: FullConfig) => {
   const { storageState } = config.projects[0].use;
   const browser = await chromium.launch();
   const context = await browser.newContext();
+
   const page = await context.newPage();
 
-  await logIn(page, testUser.id, 'nb/klage/alderspensjon/begrunnelse');
-  await verifyLogin(page, testUser);
+  await page.goto(`${UI_DOMAIN}/nb/klage/alderspensjon/begrunnelse`, { waitUntil: 'domcontentloaded' });
+
+  await logIn(page, TEST_USER.id);
 
   await dismissConsentBanner(page, context);
 
