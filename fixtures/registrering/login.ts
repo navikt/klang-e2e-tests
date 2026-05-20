@@ -3,7 +3,7 @@ import type { Page } from '@playwright/test';
 
 const MAX_LOGIN_ATTEMPTS = 3;
 
-export const logIn = async (page: Page, id: string): Promise<boolean> => {
+export const logIn = async (page: Page, id: string): Promise<void> => {
   let lastError: unknown;
 
   const initialUrl = page.url();
@@ -11,11 +11,12 @@ export const logIn = async (page: Page, id: string): Promise<boolean> => {
   for (let attempt = 1; attempt <= MAX_LOGIN_ATTEMPTS; attempt++) {
     try {
       if (page.url() !== initialUrl) {
-        // Navigate to inital URL before attempting login
+        // Navigate to initial URL before attempting login
         await page.goto(initialUrl, { timeout: 30_000 });
       }
 
-      return await attemptLogIn(page, id);
+      await attemptLogIn(page, id);
+      return;
     } catch (error) {
       lastError = error;
       console.warn(
@@ -27,11 +28,11 @@ export const logIn = async (page: Page, id: string): Promise<boolean> => {
   throw lastError;
 };
 
-const attemptLogIn = async (page: Page, id: string): Promise<boolean> => {
+const attemptLogIn = async (page: Page, id: string): Promise<void> => {
   const isLoggedIn = await checkLoggedIn(page);
 
   if (isLoggedIn) {
-    return true;
+    return;
   }
 
   await page.getByText('Logg inn', { exact: true }).click();
@@ -40,7 +41,11 @@ const attemptLogIn = async (page: Page, id: string): Promise<boolean> => {
   await page.getByText('Autentiser').click();
   await page.waitForURL(`${UI_DOMAIN}/**`, { timeout: 30_000 });
 
-  return await checkLoggedIn(page);
+  const loggedIn = await checkLoggedIn(page);
+
+  if (!loggedIn) {
+    throw new Error('Login flow completed but user is not logged in');
+  }
 };
 
 export const checkLoggedIn = async (page: Page) => {
@@ -50,7 +55,7 @@ export const checkLoggedIn = async (page: Page) => {
     const logIn = decoratorHeader.getByText('Logg inn', { exact: true });
 
     // Wait for either "Logg ut" or "Logg inn" to be visible to determine login state
-    await logOut.or(logIn).waitFor({ timeout: 10_000, state: 'visible' });
+    await logOut.or(logIn).waitFor({ state: 'visible' });
 
     return await logOut.isVisible();
   } catch {

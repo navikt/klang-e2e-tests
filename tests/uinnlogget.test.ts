@@ -1,108 +1,75 @@
 import { Innsendingsytelse } from '@app/fixtures/innsendingsytelse';
 import { test } from '@app/fixtures/registrering/fixture';
-import { Type } from '@app/fixtures/registrering/klang-page';
+import { Type } from '@app/fixtures/registrering/klang-case';
 import { TEST_USER } from '@app/testdata/user';
+
+const CASES = [
+  { type: Type.Klage, ytelse: Innsendingsytelse.BARNEBIDRAG_OG_BIDRAGSFORSKUDD },
+  { type: Type.Anke, ytelse: Innsendingsytelse.BARNEPENSJON },
+  { type: Type.Klageettersendelse, ytelse: Innsendingsytelse.BARNETRYGD },
+  { type: Type.Ankeettersendelse, ytelse: Innsendingsytelse.BIDRAGSFORSKUDD },
+];
 
 test.describe('Uinnlogget', () => {
   // Don't reuse logged in state for these tests.
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test('Klage', async ({ klangPage }) => {
-    await klangPage.createCase(Type.Klage, Innsendingsytelse.BARNEBIDRAG_OG_BIDRAGSFORSKUDD);
-    await klangPage.insertIdNumber(TEST_USER.id);
-    await klangPage.insertFirstName('Vedtaksuenig');
-    await klangPage.insertLastName('Sytersen');
-    await klangPage.insertVedtaksdato('01.02.2025');
-    await klangPage.insertSaksnummer('1337');
-    await klangPage.insertBegrunnelse('Fordi jeg ikke er enig');
-    await klangPage.checkVedleggCheckbox();
+  CASES.forEach(({ type, ytelse }) => {
+    test(type, async ({ klangCase }) => {
+      await klangCase.createCase(type, ytelse);
+      await klangCase.begrunnelse.insertIdNumber(TEST_USER.id);
+      await klangCase.begrunnelse.insertFirstName('Vedtaksuenig');
+      await klangCase.begrunnelse.insertLastName('Uenigvedtak');
+      await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
 
-    await klangPage.verifyBegrunnelse();
+      if (type === Type.Klageettersendelse) {
+        await klangCase.begrunnelse.checkHarMottattBrevCheckbox();
+      }
 
-    await klangPage.goToOppsummering();
-    await klangPage.verifyOppsummering();
-    await klangPage.checkJegForstårCheckbox();
+      await klangCase.begrunnelse.insertSaksnummer('1337');
+      await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
+      await klangCase.begrunnelse.checkVedleggCheckbox();
 
-    await klangPage.downloadPdf();
+      await klangCase.begrunnelse.verify();
+
+      await klangCase.begrunnelse.submit();
+      await klangCase.oppsummering.verify();
+      await klangCase.oppsummering.checkJegForstårCheckbox();
+      await klangCase.oppsummering.download();
+      await klangCase.kvittering.verify();
+    });
   });
 
-  test('Anke', async ({ klangPage }) => {
-    await klangPage.createCase(Type.Anke, Innsendingsytelse.BARNEPENSJON);
-    await klangPage.insertIdNumber(TEST_USER.id);
-    await klangPage.insertFirstName('Vedtaksuenig');
-    await klangPage.insertLastName('Sytersen');
-    await klangPage.insertVedtaksdato('01.02.2025');
-    await klangPage.insertSaksnummer('1337');
-    await klangPage.insertBegrunnelse('Fordi jeg ikke er enig');
-    await klangPage.checkVedleggCheckbox();
+  test.describe('til innlogget', () => {
+    CASES.forEach(({ type, ytelse }) => {
+      test(type, async ({ klangCase }) => {
+        test.slow(); // Full IdP login flow
+        await klangCase.createCase(type, ytelse);
+        await klangCase.begrunnelse.insertIdNumber(TEST_USER.id);
+        await klangCase.begrunnelse.insertFirstName('Vedtaksuenig');
+        await klangCase.begrunnelse.insertLastName('Uenigvedtak');
+        await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
 
-    await klangPage.verifyBegrunnelse();
+        if (type === Type.Klageettersendelse) {
+          await klangCase.begrunnelse.checkHarMottattBrevCheckbox();
+        }
 
-    await klangPage.goToOppsummering();
-    await klangPage.verifyOppsummering();
-    await klangPage.checkJegForstårCheckbox();
+        await klangCase.begrunnelse.insertSaksnummer('1337');
+        await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
+        await klangCase.begrunnelse.checkVedleggCheckbox();
 
-    await klangPage.downloadPdf();
-  });
+        await klangCase.begrunnelse.verify();
 
-  test('Klageettersendelse', async ({ klangPage }) => {
-    await klangPage.createCase(Type.Klageettersendelse, Innsendingsytelse.BARNETRYGD);
-    await klangPage.insertIdNumber(TEST_USER.id);
-    await klangPage.insertFirstName('Vedtaksuenig');
-    await klangPage.insertLastName('Sytersen');
-    await klangPage.insertVedtaksdato('01.02.2025');
+        await klangCase.logIn();
 
-    await klangPage.checkHarMottattBrevCheckbox();
-    await klangPage.insertSaksnummer('1337');
+        await klangCase.begrunnelse.verify();
 
-    await klangPage.insertBegrunnelse('Jeg er fortsatt uenig');
-    await klangPage.checkVedleggCheckbox();
-
-    await klangPage.verifyBegrunnelse();
-
-    await klangPage.goToOppsummering();
-    await klangPage.verifyOppsummering();
-    await klangPage.checkJegForstårCheckbox();
-
-    await klangPage.downloadPdf();
-  });
-
-  test('Ankeettersendelse', async ({ klangPage }) => {
-    await klangPage.createCase(Type.Ankeettersendelse, Innsendingsytelse.BIDRAGSFORSKUDD);
-    await klangPage.insertIdNumber(TEST_USER.id);
-    await klangPage.insertFirstName('Vedtaksuenig');
-    await klangPage.insertLastName('Sytersen');
-    await klangPage.insertVedtaksdato('01.02.2025');
-
-    await klangPage.insertSaksnummer('1337');
-
-    await klangPage.insertBegrunnelse('Jeg er fortsatt uenig');
-    await klangPage.checkVedleggCheckbox();
-
-    await klangPage.verifyBegrunnelse();
-
-    await klangPage.goToOppsummering();
-    await klangPage.verifyOppsummering();
-    await klangPage.checkJegForstårCheckbox();
-
-    await klangPage.downloadPdf();
-  });
-
-  test('Uinnlogget til innlogget', async ({ klangPage }) => {
-    test.slow(); // Full IdP login + create/delete/create case pattern
-    await klangPage.createCase(Type.Klage, Innsendingsytelse.BIDRAG_TIL_SARLIGE_UTGIFTER);
-    await klangPage.insertIdNumber(TEST_USER.id);
-    await klangPage.insertFirstName('Vedtaksuenig');
-    await klangPage.insertLastName('Sytersen');
-    await klangPage.insertVedtaksdato('01.02.2025');
-    await klangPage.insertSaksnummer('1337');
-    await klangPage.insertBegrunnelse('Fordi jeg ikke er enig');
-    await klangPage.checkVedleggCheckbox();
-
-    await klangPage.verifyBegrunnelse();
-
-    await klangPage.logIn();
-
-    await klangPage.verifyBegrunnelse();
+        await klangCase.begrunnelse.submit();
+        await klangCase.oppsummering.verify();
+        await klangCase.oppsummering.sendInn();
+        await klangCase.kvittering.verify();
+        await klangCase.kvittering.downloadPdf();
+      });
+    });
   });
 });
