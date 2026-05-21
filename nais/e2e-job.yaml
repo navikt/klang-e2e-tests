@@ -20,7 +20,13 @@ spec:
   image: {{image}}
   env:
     - name: JOB_ID
-      value: {{jobid}}
+      value: '{{jobid}}'
+    - name: VERSION
+      value: '{{version}}'
+    - name: GITHUB_ACTOR
+      value: '{{github_actor}}'
+    - name: GITHUB_REPOSITORY
+      value: '{{github_repository}}'
   envFrom:
     - secret: slack-e2e-secrets
     - configmap: slack-e2e-configmap
