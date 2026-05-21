@@ -1,3 +1,4 @@
+import { slackReporter, statusReporter } from '@navikt/klage-e2e-reporters';
 import { defineConfig } from 'playwright/test';
 
 export default defineConfig({
@@ -8,7 +9,11 @@ export default defineConfig({
   globalSetup: require.resolve('./setup/global-setup'),
 
   outputDir: '/tmp/test-results',
-  reporter: [['list'], ['./reporters/slack-reporter.ts'], ['./reporters/status.ts']],
+  reporter: [
+    ['list'],
+    slackReporter({ botName: 'Klang E2E', iconUrl: 'navikt/klang/main/frontend/assets/logo192.png' }),
+    statusReporter({ name: 'Klang E2E' }),
+  ],
   retries: 1,
 
   use: {

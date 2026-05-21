@@ -25,6 +25,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      packages: read
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
       version: ${{ steps.image-tag.outputs.tag }}
@@ -40,6 +41,8 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile --ignore-scripts
+        env:
+          READER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Typecheck
         run: bun run tsc
@@ -50,7 +53,12 @@ jobs:
       - name: Get image tag
         id: image-tag
         shell: bash
-        run: echo "tag=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "tag=latest,$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          else
+            echo "tag=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          fi
 
       - name: Build and publish image
         uses: nais/docker-build-push@v0
