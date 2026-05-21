@@ -1,8 +1,8 @@
-import { checkLoggedIn } from '@app/fixtures/registrering/login';
-import type { SharedState } from '@app/fixtures/registrering/shared-state';
-import { Type } from '@app/fixtures/registrering/shared-state';
 import type { BrowserContext, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
+import { checkLoggedIn } from '@/fixtures/registrering/login';
+import type { SharedState } from '@/fixtures/registrering/shared-state';
+import { Type } from '@/fixtures/registrering/shared-state';
 
 export class KvitteringPage {
   constructor(

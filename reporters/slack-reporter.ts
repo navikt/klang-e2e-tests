@@ -1,14 +1,4 @@
 import nodePath from 'node:path';
-import {
-  asyncForEach,
-  delay,
-  getFullStatusIcon,
-  getTestStatusIcon,
-  getTestTitle,
-  SlackIcon,
-} from '@app/reporters/functions';
-import { GITHUB_ACTOR, GITHUB_REPOSITORY, VERSION } from '@app/reporters/trigger';
-import { getSlack, type SlackMessageThread } from '@app/slack/slack-client';
 import type {
   FullConfig,
   FullResult,
@@ -18,6 +8,16 @@ import type {
   TestResult,
   TestStep,
 } from '@playwright/test/reporter';
+import {
+  asyncForEach,
+  delay,
+  getFullStatusIcon,
+  getTestStatusIcon,
+  getTestTitle,
+  SlackIcon,
+} from '@/reporters/functions';
+import { GITHUB_ACTOR, GITHUB_REPOSITORY, VERSION } from '@/reporters/trigger';
+import { getSlack, type SlackMessageThread } from '@/slack/slack-client';
 
 interface TestSlackData {
   icon: SlackIcon;

@@ -1,22 +1,22 @@
-import { UI_DOMAIN } from '@app/config/env';
-import { dismissConsentBanner } from '@app/fixtures/consent';
-import { finishedRequest } from '@app/fixtures/helpers';
-import type { Innsendingsytelse } from '@app/fixtures/innsendingsytelse';
-import { BegrunnelsePage } from '@app/fixtures/registrering/begrunnelse';
-import { KvitteringPage } from '@app/fixtures/registrering/kvittering';
-import { logIn } from '@app/fixtures/registrering/login';
-import { OppsummeringPage } from '@app/fixtures/registrering/oppsummering';
+import type { BrowserContext, Page } from '@playwright/test';
+import { UI_DOMAIN } from '@/config/env';
+import { dismissConsentBanner } from '@/fixtures/consent';
+import { finishedRequest } from '@/fixtures/helpers';
+import type { Innsendingsytelse } from '@/fixtures/innsendingsytelse';
+import { BegrunnelsePage } from '@/fixtures/registrering/begrunnelse';
+import { KvitteringPage } from '@/fixtures/registrering/kvittering';
+import { logIn } from '@/fixtures/registrering/login';
+import { OppsummeringPage } from '@/fixtures/registrering/oppsummering';
 import {
   createSharedState,
   SAK_REGEX,
   type SharedState,
   Type,
   toQueryParams,
-} from '@app/fixtures/registrering/shared-state';
-import { TEST_USER } from '@app/testdata/user';
-import type { BrowserContext, Page } from '@playwright/test';
+} from '@/fixtures/registrering/shared-state';
+import { TEST_USER } from '@/testdata/user';
 
-export { Type } from '@app/fixtures/registrering/shared-state';
+export { Type } from '@/fixtures/registrering/shared-state';
 
 export class KlangCase {
   readonly begrunnelse: BegrunnelsePage;

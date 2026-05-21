@@ -1,4 +1,4 @@
-import type { Innsendingsytelse } from '@app/fixtures/innsendingsytelse';
+import type { Innsendingsytelse } from '@/fixtures/innsendingsytelse';
 
 export enum Type {
   Klage = 'klage',

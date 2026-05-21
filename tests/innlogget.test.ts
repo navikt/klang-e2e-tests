@@ -1,6 +1,6 @@
-import { Innsendingsytelse } from '@app/fixtures/innsendingsytelse';
-import { test } from '@app/fixtures/registrering/fixture';
-import { Type } from '@app/fixtures/registrering/klang-case';
+import { Innsendingsytelse } from '@/fixtures/innsendingsytelse';
+import { test } from '@/fixtures/registrering/fixture';
+import { Type } from '@/fixtures/registrering/klang-case';
 
 const CASES = [
   { type: Type.Klage, ytelse: Innsendingsytelse.ALDERSPENSJON },
