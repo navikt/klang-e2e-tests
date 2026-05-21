@@ -32,9 +32,10 @@ runs:
   using: "composite"
   steps:
     - name: Checkout E2E
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: navikt/klang-e2e-tests
+        ref: ${{ inputs.e2e_tag }}
 
     - name: Get image registry
       id: image-registry
@@ -50,28 +51,32 @@ runs:
     - name: Get image tag
       id: image-tag
       shell: bash
+      env:
+        E2E_TAG: ${{ inputs.e2e_tag }}
       run: |
-        if [[ -n "${{ inputs.e2e_tag }}" ]]; then
-          echo "tag=${{ inputs.e2e_tag }}" >> $GITHUB_OUTPUT
-        elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+        if [[ -n "$E2E_TAG" ]]; then
+          echo "tag=$E2E_TAG" >> $GITHUB_OUTPUT
+        elif [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
           echo "tag=latest" >> $GITHUB_OUTPUT
         else
-          echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          echo "tag=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
         fi
 
     - name: Generate image name
       id: image
       shell: bash
-      run: echo "image=${{ steps.image-registry.outputs.registry }}/klang-e2e-tests:${{ steps.image-tag.outputs.tag }}" >> $GITHUB_OUTPUT
+      env:
+        REGISTRY: ${{ steps.image-registry.outputs.registry }}
+        IMAGE_TAG: ${{ steps.image-tag.outputs.tag }}
+      run: echo "image=$REGISTRY/klang-e2e-tests:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
     - name: Run E2E tests
       uses: nais/deploy/actions/deploy@v2
       env:
         CLUSTER: dev-gcp
-        VAR: jobid=${{ steps.uuid.outputs.uuid }},image=${{ steps.image.outputs.image }}
+        VAR: jobid=${{ steps.uuid.outputs.uuid }},image=${{ steps.image.outputs.image }},version=${{ steps.image-tag.outputs.tag }},github_actor=${{ github.actor }},github_repository=${{ github.repository }}
         TEAM: klage
         RESOURCE: nais/e2e-job.yaml
-        IMAGE: ${{ steps.image.outputs.image }}
 
     - name: Check E2E job status
       id: status
