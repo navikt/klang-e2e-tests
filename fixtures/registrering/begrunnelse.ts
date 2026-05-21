@@ -7,6 +7,11 @@ import { checkLoggedIn } from '@/fixtures/registrering/login';
 import type { SharedState } from '@/fixtures/registrering/shared-state';
 import { Type } from '@/fixtures/registrering/shared-state';
 
+const TESTDATA_DIR = path.resolve(import.meta.dirname, '..', '..', 'testdata');
+
+const VEDLEGG_REGEX = /Vedlegg.*/;
+const SLETT_REGEX = /Slett.*/;
+
 export class BegrunnelsePage {
   constructor(
     private page: Page,
@@ -122,9 +127,9 @@ export class BegrunnelsePage {
     await this.page
       .locator('[id="file-upload-input"]')
       .setInputFiles([
-        path.join(__dirname, '..', '..', 'testdata', 'dummy.pdf'),
-        path.join(__dirname, '..', '..', 'testdata', 'logo.png'),
-        path.join(__dirname, '..', '..', 'testdata', 'logo.jpg'),
+        path.join(TESTDATA_DIR, 'dummy.pdf'),
+        path.join(TESTDATA_DIR, 'logo.png'),
+        path.join(TESTDATA_DIR, 'logo.jpg'),
       ]);
 
     // Wait for all uploads to complete
