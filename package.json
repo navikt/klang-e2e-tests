@@ -5,9 +5,9 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "playwright test",
-    "dev": "playwright test -c playwright.config.dev.ts",
-    "local": "TEST_ENV=local bun run dev",
+    "test": "TARGET=dev CONFIG=nais playwright test",
+    "dev": "TARGET=dev CONFIG=local playwright test",
+    "local": "TARGET=local CONFIG=local playwright test",
     "lint": "biome check",
     "typecheck": "tsc"
   },
