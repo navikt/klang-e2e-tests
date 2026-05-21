@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect } from 'playwright/test';
+import { expect } from '@playwright/test';
 import { Innsendingsytelse } from '@/fixtures/innsendingsytelse';
 import { test } from '@/fixtures/registrering/fixture';
 import { Type } from '@/fixtures/registrering/klang-case';

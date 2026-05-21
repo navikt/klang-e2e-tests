@@ -1,5 +1,5 @@
 import { slackReporter, statusReporter } from '@navikt/klage-e2e-reporters';
-import { defineConfig } from 'playwright/test';
+import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   name: 'Klang',
