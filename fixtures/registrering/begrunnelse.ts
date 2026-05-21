@@ -260,11 +260,11 @@ export class BegrunnelsePage {
   }
 
   async #deleteAllVedlegg() {
-    await this.page.getByText(/Vedlegg.*/, { exact: true }).waitFor();
+    await this.page.getByText(VEDLEGG_REGEX, { exact: true }).waitFor();
 
     const items = await this.page
       .locator('li')
-      .filter({ has: this.page.getByTitle(/Slett.*/, { exact: true }) })
+      .filter({ has: this.page.getByTitle(SLETT_REGEX, { exact: true }) })
       .all();
 
     for (const li of items.reverse()) {

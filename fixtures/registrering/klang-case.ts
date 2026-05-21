@@ -16,8 +16,6 @@ import {
 } from '@/fixtures/registrering/shared-state';
 import { TEST_USER } from '@/testdata/user';
 
-export { Type } from '@/fixtures/registrering/shared-state';
-
 export class KlangCase {
   readonly begrunnelse: BegrunnelsePage;
   readonly oppsummering: OppsummeringPage;
