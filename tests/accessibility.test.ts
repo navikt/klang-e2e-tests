@@ -17,25 +17,35 @@ test.describe('Tilgjengelighet innlogget', () => {
 
   CASES.forEach(({ type, ytelse }) => {
     test(type, async ({ page, klangCase }) => {
-      await klangCase.createLoggedInCase(type, ytelse);
+      await test.step('Create case', async () => {
+        await klangCase.createLoggedInCase(type, ytelse);
+      });
 
       const axeBuilder = new AxeBuilder({ page });
 
-      expect((await axeBuilder.analyze()).violations).toEqual([]);
-      await klangCase.begrunnelse.insertBegrunnelse('Reason.');
-      await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
+      await test.step('Begrunnelse', async () => {
+        expect((await axeBuilder.analyze()).violations).toEqual([]);
+        await klangCase.begrunnelse.insertBegrunnelse('Reason.');
+        await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
 
-      if (type === Type.Klageettersendelse) {
-        await klangCase.begrunnelse.checkHarMottattBrevCheckbox();
-      }
+        if (type === Type.Klageettersendelse) {
+          await klangCase.begrunnelse.checkHarMottattBrevCheckbox();
+        }
 
-      await klangCase.begrunnelse.submit();
-      expect(page.url().endsWith('/oppsummering')).toBe(true);
-      expect((await axeBuilder.analyze()).violations).toEqual([]);
+        await klangCase.begrunnelse.submit();
+      });
 
-      await klangCase.oppsummering.sendInn();
-      expect(page.url().endsWith('/kvittering')).toBe(true);
-      expect((await axeBuilder.analyze()).violations).toEqual([]);
+      await test.step('Oppsummering', async () => {
+        expect(page.url().endsWith('/oppsummering')).toBe(true);
+        expect((await axeBuilder.analyze()).violations).toEqual([]);
+
+        await klangCase.oppsummering.sendInn();
+      });
+
+      await test.step('Kvittering', async () => {
+        expect(page.url().endsWith('/kvittering')).toBe(true);
+        expect((await axeBuilder.analyze()).violations).toEqual([]);
+      });
     });
   });
 });
@@ -46,31 +56,39 @@ test.describe('Tilgjengelighet uinnlogget', () => {
 
   CASES.forEach(({ type, ytelse }) => {
     test(type, async ({ page, klangCase }) => {
-      await klangCase.createCase(type, ytelse);
+      await test.step('Create case', async () => {
+        await klangCase.createCase(type, ytelse);
+      });
 
       const axeBuilder = new AxeBuilder({ page });
 
-      expect((await axeBuilder.analyze()).violations).toEqual([]);
-      await klangCase.begrunnelse.insertIdNumber(TEST_USER.id);
-      await klangCase.begrunnelse.insertFirstName('First');
-      await klangCase.begrunnelse.insertLastName('Last');
-      await klangCase.begrunnelse.insertBegrunnelse('Reason.');
-      await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
+      await test.step('Begrunnelse', async () => {
+        expect((await axeBuilder.analyze()).violations).toEqual([]);
+        await klangCase.begrunnelse.insertIdNumber(TEST_USER.id);
+        await klangCase.begrunnelse.insertFirstName('First');
+        await klangCase.begrunnelse.insertLastName('Last');
+        await klangCase.begrunnelse.insertBegrunnelse('Reason.');
+        await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
 
-      if (type === Type.Klageettersendelse) {
-        await klangCase.begrunnelse.checkHarMottattBrevCheckbox();
-      }
+        if (type === Type.Klageettersendelse) {
+          await klangCase.begrunnelse.checkHarMottattBrevCheckbox();
+        }
 
-      await klangCase.begrunnelse.submit();
+        await klangCase.begrunnelse.submit();
+      });
 
-      expect(page.url().endsWith('/oppsummering')).toBe(true);
-      expect((await axeBuilder.analyze()).violations).toEqual([]);
+      await test.step('Oppsummering', async () => {
+        expect(page.url().endsWith('/oppsummering')).toBe(true);
+        expect((await axeBuilder.analyze()).violations).toEqual([]);
 
-      await klangCase.oppsummering.checkJegForstårCheckbox();
-      await klangCase.oppsummering.download();
+        await klangCase.oppsummering.checkJegForstårCheckbox();
+        await klangCase.oppsummering.download();
+      });
 
-      expect(page.url().endsWith('/innsending')).toBe(true);
-      expect((await axeBuilder.analyze()).violations).toEqual([]);
+      await test.step('Innsending', async () => {
+        expect(page.url().endsWith('/innsending')).toBe(true);
+        expect((await axeBuilder.analyze()).violations).toEqual([]);
+      });
     });
   });
 });

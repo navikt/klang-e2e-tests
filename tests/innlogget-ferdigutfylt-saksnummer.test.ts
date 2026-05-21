@@ -19,29 +19,36 @@ test.describe('Innlogget med ferdigutfylt saksnummer', () => {
     const name = harMottattBrev ? `${type} med mottatt brev` : type;
 
     test(name, async ({ klangCase }) => {
-      await klangCase.createLoggedInCase(type, ytelse, '6969', harMottattBrev ?? null);
+      await test.step('Create case', async () => {
+        await klangCase.createLoggedInCase(type, ytelse, '6969', harMottattBrev ?? null);
+      });
 
-      if (harMottattBrev) {
+      await test.step('Begrunnelse', async () => {
+        if (harMottattBrev) {
+          await klangCase.begrunnelse.verify();
+        }
+
+        await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
+
+        if (type === Type.Klageettersendelse) {
+          await klangCase.begrunnelse.checkHarMottattBrevCheckbox(!harMottattBrev);
+        }
+
+        await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
+        await klangCase.begrunnelse.uploadAttachments();
         await klangCase.begrunnelse.verify();
-      }
+        await klangCase.begrunnelse.submit();
+      });
 
-      await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
+      await test.step('Oppsummering', async () => {
+        await klangCase.oppsummering.verify();
+        await klangCase.oppsummering.sendInn();
+      });
 
-      if (type === Type.Klageettersendelse) {
-        await klangCase.begrunnelse.checkHarMottattBrevCheckbox(!harMottattBrev);
-      }
-
-      await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
-
-      await klangCase.begrunnelse.uploadAttachments();
-
-      await klangCase.begrunnelse.verify();
-
-      await klangCase.begrunnelse.submit();
-      await klangCase.oppsummering.verify();
-      await klangCase.oppsummering.sendInn();
-      await klangCase.kvittering.verify();
-      await klangCase.kvittering.downloadPdf();
+      await test.step('Kvittering', async () => {
+        await klangCase.kvittering.verify();
+        await klangCase.kvittering.downloadPdf();
+      });
     });
   });
 });

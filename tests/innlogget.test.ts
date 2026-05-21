@@ -14,26 +14,33 @@ test.describe('Innlogget', () => {
 
   CASES.forEach(({ type, ytelse }) => {
     test(type, async ({ klangCase }) => {
-      await klangCase.createLoggedInCase(type, ytelse);
+      await test.step('Create case', async () => {
+        await klangCase.createLoggedInCase(type, ytelse);
+      });
 
-      await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
+      await test.step('Begrunnelse', async () => {
+        await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
 
-      if (type === Type.Klageettersendelse) {
-        await klangCase.begrunnelse.checkHarMottattBrevCheckbox();
-      }
+        if (type === Type.Klageettersendelse) {
+          await klangCase.begrunnelse.checkHarMottattBrevCheckbox();
+        }
 
-      await klangCase.begrunnelse.insertSaksnummer('1337');
-      await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
+        await klangCase.begrunnelse.insertSaksnummer('1337');
+        await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
+        await klangCase.begrunnelse.uploadAttachments();
+        await klangCase.begrunnelse.verify();
+        await klangCase.begrunnelse.submit();
+      });
 
-      await klangCase.begrunnelse.uploadAttachments();
+      await test.step('Oppsummering', async () => {
+        await klangCase.oppsummering.verify();
+        await klangCase.oppsummering.sendInn();
+      });
 
-      await klangCase.begrunnelse.verify();
-
-      await klangCase.begrunnelse.submit();
-      await klangCase.oppsummering.verify();
-      await klangCase.oppsummering.sendInn();
-      await klangCase.kvittering.verify();
-      await klangCase.kvittering.downloadPdf();
+      await test.step('Kvittering', async () => {
+        await klangCase.kvittering.verify();
+        await klangCase.kvittering.downloadPdf();
+      });
     });
   });
 });

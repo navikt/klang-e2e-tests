@@ -18,27 +18,35 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
 
   CASES.forEach(({ type, ytelse }) => {
     test(type, async ({ klangCase }) => {
-      await klangCase.createCase(type, ytelse, '6969');
+      await test.step('Create case', async () => {
+        await klangCase.createCase(type, ytelse, '6969');
+      });
 
-      await klangCase.begrunnelse.insertIdNumber(TEST_USER.id);
-      await klangCase.begrunnelse.insertFirstName('Vedtaksuenig');
-      await klangCase.begrunnelse.insertLastName('Sytersen');
-      await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
+      await test.step('Begrunnelse', async () => {
+        await klangCase.begrunnelse.insertIdNumber(TEST_USER.id);
+        await klangCase.begrunnelse.insertFirstName('Vedtaksuenig');
+        await klangCase.begrunnelse.insertLastName('Sytersen');
+        await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
 
-      if (type === Type.Klageettersendelse) {
-        await klangCase.begrunnelse.checkHarMottattBrevCheckbox();
-      }
+        if (type === Type.Klageettersendelse) {
+          await klangCase.begrunnelse.checkHarMottattBrevCheckbox();
+        }
 
-      await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
-      await klangCase.begrunnelse.checkVedleggCheckbox();
+        await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
+        await klangCase.begrunnelse.checkVedleggCheckbox();
+        await klangCase.begrunnelse.verify();
+        await klangCase.begrunnelse.submit();
+      });
 
-      await klangCase.begrunnelse.verify();
+      await test.step('Oppsummering', async () => {
+        await klangCase.oppsummering.verify();
+        await klangCase.oppsummering.checkJegForstårCheckbox();
+        await klangCase.oppsummering.download();
+      });
 
-      await klangCase.begrunnelse.submit();
-      await klangCase.oppsummering.verify();
-      await klangCase.oppsummering.checkJegForstårCheckbox();
-      await klangCase.oppsummering.download();
-      await klangCase.kvittering.verify();
+      await test.step('Kvittering', async () => {
+        await klangCase.kvittering.verify();
+      });
     });
   });
 
@@ -47,29 +55,37 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
       test(type, async ({ klangCase, page }) => {
         test.slow(); // Navigation retries may be needed under dev server load
 
-        await klangCase.createCase(type, ytelse, '1st_saksnummer', null);
+        await test.step('Create case', async () => {
+          await klangCase.createCase(type, ytelse, '1st_saksnummer', null);
+        });
 
-        await klangCase.begrunnelse.verify();
+        await test.step('Begrunnelse (initial deep link)', async () => {
+          await klangCase.begrunnelse.verify();
 
-        expect(page.url()).toBe(`${UI_DOMAIN}/nb/${type}/${ytelse}/begrunnelse`);
+          expect(page.url()).toBe(`${UI_DOMAIN}/nb/${type}/${ytelse}/begrunnelse`);
+        });
 
-        await klangCase.setDeepLinkParams('new_saksnummer', true);
+        await test.step('Begrunnelse (new deep link)', async () => {
+          await klangCase.setDeepLinkParams('new_saksnummer', true);
+          await klangCase.begrunnelse.verify();
+          await klangCase.begrunnelse.insertIdNumber(TEST_USER.id);
+          await klangCase.begrunnelse.insertFirstName('Vedtaksuenig');
+          await klangCase.begrunnelse.insertLastName('Sytersen');
+          await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
+          await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
+          await klangCase.begrunnelse.checkVedleggCheckbox();
+          await klangCase.begrunnelse.submit();
+        });
 
-        await klangCase.begrunnelse.verify();
+        await test.step('Oppsummering', async () => {
+          await klangCase.oppsummering.verify();
+          await klangCase.oppsummering.checkJegForstårCheckbox();
+          await klangCase.oppsummering.download();
+        });
 
-        // Fill fields (deep link only provides saksnummer + harMottattBrev)
-        await klangCase.begrunnelse.insertIdNumber(TEST_USER.id);
-        await klangCase.begrunnelse.insertFirstName('Vedtaksuenig');
-        await klangCase.begrunnelse.insertLastName('Sytersen');
-        await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
-        await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
-        await klangCase.begrunnelse.checkVedleggCheckbox();
-
-        await klangCase.begrunnelse.submit();
-        await klangCase.oppsummering.verify();
-        await klangCase.oppsummering.checkJegForstårCheckbox();
-        await klangCase.oppsummering.download();
-        await klangCase.kvittering.verify();
+        await test.step('Kvittering', async () => {
+          await klangCase.kvittering.verify();
+        });
       });
     });
   });
@@ -79,28 +95,38 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
       test(type, async ({ klangCase, page }) => {
         test.slow(); // This test does a full IdP login + multiple navigations
 
-        await klangCase.createCase(type, ytelse, 'initial_saksnummer', true);
+        await test.step('Create case', async () => {
+          await klangCase.createCase(type, ytelse, 'initial_saksnummer', true);
+        });
 
-        await klangCase.begrunnelse.insertIdNumber(TEST_USER.id);
-        await klangCase.begrunnelse.verify();
+        await test.step('Begrunnelse (uinnlogget)', async () => {
+          await klangCase.begrunnelse.insertIdNumber(TEST_USER.id);
+          await klangCase.begrunnelse.verify();
 
-        expect(page.url()).toBe(`${UI_DOMAIN}/nb/${type}/${ytelse}/begrunnelse`);
+          expect(page.url()).toBe(`${UI_DOMAIN}/nb/${type}/${ytelse}/begrunnelse`);
+        });
 
-        await klangCase.logIn();
+        await test.step('Log in', async () => {
+          await klangCase.logIn();
+        });
 
-        await klangCase.setDeepLinkParams('new_saksnummer', true);
+        await test.step('Begrunnelse (innlogget, new deep link)', async () => {
+          await klangCase.setDeepLinkParams('new_saksnummer', true);
+          await klangCase.begrunnelse.verify();
+          await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
+          await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
+          await klangCase.begrunnelse.submit();
+        });
 
-        await klangCase.begrunnelse.verify();
+        await test.step('Oppsummering', async () => {
+          await klangCase.oppsummering.verify();
+          await klangCase.oppsummering.sendInn();
+        });
 
-        // Fill remaining fields (logged in provides personal info; deep link provides saksnummer + harMottattBrev)
-        await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
-        await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
-
-        await klangCase.begrunnelse.submit();
-        await klangCase.oppsummering.verify();
-        await klangCase.oppsummering.sendInn();
-        await klangCase.kvittering.verify();
-        await klangCase.kvittering.downloadPdf();
+        await test.step('Kvittering', async () => {
+          await klangCase.kvittering.verify();
+          await klangCase.kvittering.downloadPdf();
+        });
       });
     });
   });
