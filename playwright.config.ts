@@ -1,13 +1,43 @@
 import { slackReporter, statusReporter } from '@navikt/klage-e2e-reporters';
 import { defineConfig } from '@playwright/test';
 
-export default defineConfig({
+const isInNais = process.env.CONFIG === 'nais';
+
+export const storageState = isInNais ? '/tmp/state.json' : './state.json';
+
+const baseConfig = defineConfig({
   name: 'Klang',
   testDir: './tests',
+  testMatch: '**/*.test.ts',
   fullyParallel: true,
   globalTimeout: 360_000,
-  globalSetup: require.resolve('./setup/global-setup'),
+  globalSetup: './setup/global-setup.ts',
 
+  use: {
+    actionTimeout: 5_000,
+    navigationTimeout: 15_000,
+    trace: 'on',
+    video: 'on',
+    screenshot: 'on',
+    locale: 'no-NB',
+    storageState,
+  },
+});
+
+const local = defineConfig({
+  ...baseConfig,
+
+  maxFailures: 1,
+  outputDir: './test-results',
+  reporter: [['list']],
+  retries: 0,
+});
+
+const nais = defineConfig({
+  ...baseConfig,
+
+  forbidOnly: true,
+  maxFailures: 0,
   outputDir: '/tmp/test-results',
   reporter: [
     ['list'],
@@ -15,14 +45,6 @@ export default defineConfig({
     statusReporter({ name: 'Klang E2E' }),
   ],
   retries: 1,
-
-  use: {
-    actionTimeout: 5_000,
-    navigationTimeout: 15_000,
-    video: 'on',
-    screenshot: 'on',
-    trace: 'on',
-    locale: 'no-NB',
-    storageState: '/tmp/state.json',
-  },
 });
+
+export default isInNais ? nais : local;

@@ -30,7 +30,7 @@ export const requiredEnvString = (name: string, defaultValue?: string): string =
   process.exit(1);
 };
 
-export const USE_LOCAL = process.env.TEST_ENV === 'local';
+export const USE_LOCAL = process.env.TARGET === 'local';
 const LOCAL_DOMAIN = 'http://localhost:8064';
 export const DEV_DOMAIN = 'https://klage.intern.dev.nav.no';
 export const UI_DOMAIN = USE_LOCAL ? LOCAL_DOMAIN : DEV_DOMAIN;
