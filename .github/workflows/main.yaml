@@ -27,6 +27,7 @@ jobs:
       id-token: write
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
+      version: ${{ steps.image-tag.outputs.tag }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -49,12 +50,7 @@ jobs:
       - name: Get image tag
         id: image-tag
         shell: bash
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "tag=latest" >> $GITHUB_OUTPUT
-          else
-            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-          fi
+        run: echo "tag=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build and publish image
         uses: nais/docker-build-push@v0
@@ -86,7 +82,7 @@ jobs:
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-gcp
-          VAR: jobid=${{ steps.uuid.outputs.uuid }},image=${{ needs.build.outputs.image }}
+          VAR: jobid=${{ steps.uuid.outputs.uuid }},image=${{ needs.build.outputs.image }},version=${{ needs.build.outputs.version }},github_actor=${{ github.actor }},github_repository=${{ github.repository }}
           TEAM: klage
           RESOURCE: nais/e2e-job.yaml
           IMAGE: ${{ needs.build.outputs.image }}
