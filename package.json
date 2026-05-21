@@ -2,7 +2,7 @@
   "name": "klang-e2e-tests",
   "version": "1.0.0",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "scripts": {
     "test": "TARGET=dev CONFIG=nais playwright test",
