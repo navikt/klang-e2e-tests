@@ -30,6 +30,7 @@ class SlackReporter implements Reporter {
   private slack = getSlack();
   private mainThread: SlackMessageThread | null = null;
   private threads: Map<string, SlackMessageThread> = new Map();
+  private pendingThreads: Map<string, Promise<SlackMessageThread | undefined>> = new Map();
   private testStatuses: Map<string, TestSlackData> = new Map();
   private tests: TestCase[] = [];
   private startTime = Date.now();
@@ -38,6 +39,14 @@ class SlackReporter implements Reporter {
 
   private async setTestMessage(test: TestCase, status: TestSlackData) {
     this.testStatuses.set(test.id, status);
+
+    // Wait for any pending initial message to resolve before updating.
+    const pending = this.pendingThreads.get(test.id);
+
+    if (pending !== undefined) {
+      await pending;
+    }
+
     const existingTestThread = this.threads.get(test.id);
 
     if (existingTestThread !== undefined) {
@@ -52,8 +61,12 @@ class SlackReporter implements Reporter {
       return;
     }
 
-    const testThread = await this.slack.postMessage(formatTest(status));
+    const promise = this.slack.postMessage(formatTest(status));
+    this.pendingThreads.set(test.id, promise);
+
+    const testThread = await promise;
     this.threads.set(test.id, testThread);
+    this.pendingThreads.delete(test.id);
 
     return testThread;
   }
@@ -155,7 +168,7 @@ class SlackReporter implements Reporter {
     const testThread = this.threads.get(test.id);
     const icon = getTestStatusIcon(test, result.status);
     const title = getTestTitle(test);
-    this.updateTestMessage(test, { icon, status: `${(result.duration / 1_000).toFixed(1)}s` });
+    await this.updateTestMessage(test, { icon, status: `${(result.duration / 1_000).toFixed(1)}s` });
 
     const isFailed = result.status === 'failed' || result.status === 'timedOut';
 
