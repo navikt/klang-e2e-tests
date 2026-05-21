@@ -1,11 +1,11 @@
 import path from 'node:path';
-import { UI_DOMAIN } from '@app/config/env';
-import { clearIfNotEmpty, finishedRequest, formatId } from '@app/fixtures/helpers';
-import { checkLoggedIn } from '@app/fixtures/registrering/login';
-import type { SharedState } from '@app/fixtures/registrering/shared-state';
-import { Type } from '@app/fixtures/registrering/shared-state';
 import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
+import { UI_DOMAIN } from '@/config/env';
+import { clearIfNotEmpty, finishedRequest, formatId } from '@/fixtures/helpers';
+import { checkLoggedIn } from '@/fixtures/registrering/login';
+import type { SharedState } from '@/fixtures/registrering/shared-state';
+import { Type } from '@/fixtures/registrering/shared-state';
 
 export class BegrunnelsePage {
   constructor(

@@ -1,5 +1,5 @@
-import { KlangCase } from '@app/fixtures/registrering/klang-case';
 import { test as base } from '@playwright/test';
+import { KlangCase } from '@/fixtures/registrering/klang-case';
 
 interface Fixtures {
   klangCase: KlangCase;

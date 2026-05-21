@@ -1,9 +1,9 @@
-import { UI_DOMAIN } from '@app/config/env';
-import { Innsendingsytelse } from '@app/fixtures/innsendingsytelse';
-import { test } from '@app/fixtures/registrering/fixture';
-import { Type } from '@app/fixtures/registrering/klang-case';
-import { TEST_USER } from '@app/testdata/user';
 import { expect } from '@playwright/test';
+import { UI_DOMAIN } from '@/config/env';
+import { Innsendingsytelse } from '@/fixtures/innsendingsytelse';
+import { test } from '@/fixtures/registrering/fixture';
+import { Type } from '@/fixtures/registrering/klang-case';
+import { TEST_USER } from '@/testdata/user';
 
 const CASES = [
   { type: Type.Klage, ytelse: Innsendingsytelse.BILSTONAD },

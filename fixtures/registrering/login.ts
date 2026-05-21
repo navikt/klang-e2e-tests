@@ -1,5 +1,5 @@
-import { UI_DOMAIN } from '@app/config/env';
 import type { Page } from '@playwright/test';
+import { UI_DOMAIN } from '@/config/env';
 
 const MAX_LOGIN_ATTEMPTS = 3;
 

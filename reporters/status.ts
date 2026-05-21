@@ -1,5 +1,5 @@
-import { GITHUB_ACTOR, GITHUB_REPOSITORY, VERSION } from '@app/reporters/trigger';
 import type { FullResult, Reporter, TestCase, TestResult } from '@playwright/test/reporter';
+import { GITHUB_ACTOR, GITHUB_REPOSITORY, VERSION } from '@/reporters/trigger';
 
 const API_KEY = process.env.WRITE_API_KEY;
 const JOB_ID = process.env.JOB_ID ?? crypto.randomUUID();

@@ -1,11 +1,11 @@
-import { UI_DOMAIN } from '@app/config/env';
-import { formatId } from '@app/fixtures/helpers';
-import { checkLoggedIn } from '@app/fixtures/registrering/login';
-import type { SharedState } from '@app/fixtures/registrering/shared-state';
-import { Type } from '@app/fixtures/registrering/shared-state';
-import { TEST_USER } from '@app/testdata/user';
 import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
+import { UI_DOMAIN } from '@/config/env';
+import { formatId } from '@/fixtures/helpers';
+import { checkLoggedIn } from '@/fixtures/registrering/login';
+import type { SharedState } from '@/fixtures/registrering/shared-state';
+import { Type } from '@/fixtures/registrering/shared-state';
+import { TEST_USER } from '@/testdata/user';
 
 export class OppsummeringPage {
   constructor(

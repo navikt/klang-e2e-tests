@@ -1,10 +1,10 @@
-import { DEV_DOMAIN, UI_DOMAIN, USE_LOCAL } from '@app/config/env';
-import { dismissConsentBanner } from '@app/fixtures/consent';
-import { logIn } from '@app/fixtures/registrering/login';
-import { TEST_USER } from '@app/testdata/user';
 import type { Page } from '@playwright/test';
 import { chromium } from '@playwright/test';
 import type { FullConfig } from '@playwright/test/reporter';
+import { DEV_DOMAIN, UI_DOMAIN, USE_LOCAL } from '@/config/env';
+import { dismissConsentBanner } from '@/fixtures/consent';
+import { logIn } from '@/fixtures/registrering/login';
+import { TEST_USER } from '@/testdata/user';
 
 const globalSetup = async (config: FullConfig) => {
   const { storageState } = config.projects[0].use;
