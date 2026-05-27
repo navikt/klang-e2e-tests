@@ -12,9 +12,9 @@ inputs:
     description: 'Identity provider for nais/login'
     required: false
   e2e_tag:
-    description: 'Tag for E2E image'
+    description: 'Git ref for E2E image'
     required: false
-    default: 'latest'
+    default: 'main'
 
 branding:
   icon: 'shield'
@@ -51,16 +51,7 @@ runs:
     - name: Get image tag
       id: image-tag
       shell: bash
-      env:
-        E2E_TAG: ${{ inputs.e2e_tag }}
-      run: |
-        if [[ -n "$E2E_TAG" ]]; then
-          echo "tag=$E2E_TAG" >> $GITHUB_OUTPUT
-        elif [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
-          echo "tag=latest" >> $GITHUB_OUTPUT
-        else
-          echo "tag=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
-        fi
+      run: echo "tag=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
     - name: Generate image name
       id: image
