@@ -57,7 +57,7 @@ test.describe('Tilgjengelighet uinnlogget', () => {
   CASES.forEach(({ type, ytelse }) => {
     test(type, async ({ page, klangCase }) => {
       await test.step('Create case', async () => {
-        await klangCase.createCase(type, ytelse);
+        await klangCase.createLoggedOutCase(type, ytelse);
       });
 
       const axeBuilder = new AxeBuilder({ page });
