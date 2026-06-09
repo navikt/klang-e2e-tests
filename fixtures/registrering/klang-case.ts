@@ -35,6 +35,12 @@ export class KlangCase {
   }
 
   async setDeepLinkParams(internalSaksnummer: string, harMottattBrev: boolean) {
+    const loggedInCasePath = LOGGED_IN_SAK_REGEX.test(this.page.url());
+
+    if (loggedInCasePath) {
+      throw new Error('Cannot change deep link params for a logged-in case. Create a new case to change params.');
+    }
+
     this.#state.internalSaksnummer = internalSaksnummer;
     this.#state.harMottattBrev = harMottattBrev;
 
@@ -43,18 +49,10 @@ export class KlangCase {
       ka: harMottattBrev,
     });
 
-    if (SAK_REGEX.test(this.page.url())) {
-      await this.deleteCase();
-      await this.#navigateAndWaitForAppRender(
-        `${UI_DOMAIN}/nb/${this.#state.type}/${this.#state.ytelse}?${params}`,
-        `${UI_DOMAIN}/nb/sak/**/begrunnelse`,
-      );
-    } else {
-      await this.#navigateAndWaitForAppRender(
-        `${UI_DOMAIN}/nb/${this.#state.type}/${this.#state.ytelse}?${params}`,
-        `${UI_DOMAIN}/nb/${this.#state.type}/${this.#state.ytelse}/begrunnelse`,
-      );
-    }
+    await this.#navigateAndWaitForAppRender(
+      `${UI_DOMAIN}/nb/${this.#state.type}/${this.#state.ytelse}?${params}`,
+      `${UI_DOMAIN}/nb/${this.#state.type}/${this.#state.ytelse}/begrunnelse`,
+    );
   }
 
   async createLoggedOutCase(
