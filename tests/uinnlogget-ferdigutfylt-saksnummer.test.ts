@@ -110,8 +110,7 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
           await klangCase.logIn();
         });
 
-        await test.step('Begrunnelse (innlogget, new deep link)', async () => {
-          await klangCase.setDeepLinkParams('new_saksnummer', true);
+        await test.step('Begrunnelse (innlogget)', async () => {
           await klangCase.begrunnelse.verify();
           await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
           await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
