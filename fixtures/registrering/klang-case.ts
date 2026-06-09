@@ -110,8 +110,7 @@ export class KlangCase {
       } catch {
         if (attempt === MAX_RELOADS) {
           throw new Error(
-            `Personal info section not visible after login + ${MAX_RELOADS} reload attempts. ` +
-              `Current URL: ${this.page.url()}`,
+            `Personal info section not visible after login + ${MAX_RELOADS} reload attempts. Current URL: ${this.page.url()}`,
           );
         }
 
@@ -183,8 +182,7 @@ export class KlangCase {
       } catch {
         if (attempt === MAX_ATTEMPTS) {
           throw new Error(
-            `Navigation to ${expectedUrlPattern} failed after ${MAX_ATTEMPTS} attempts. ` +
-              `Current URL: ${this.page.url()}`,
+            `Navigation to ${expectedUrlPattern} failed after ${MAX_ATTEMPTS} attempts. Current URL: ${this.page.url()}`,
           );
         }
       }
