@@ -5,11 +5,11 @@ import { finishedRequest } from '@/fixtures/helpers';
 import type { Innsendingsytelse } from '@/fixtures/innsendingsytelse';
 import { BegrunnelsePage } from '@/fixtures/registrering/begrunnelse';
 import { KvitteringPage } from '@/fixtures/registrering/kvittering';
-import { logIn } from '@/fixtures/registrering/login';
+import { checkLoggedIn, logIn } from '@/fixtures/registrering/login';
 import { OppsummeringPage } from '@/fixtures/registrering/oppsummering';
 import {
   createSharedState,
-  SAK_REGEX,
+  LOGGED_IN_SAK_REGEX,
   type SharedState,
   Type,
   toQueryParams,
@@ -127,7 +127,32 @@ export class KlangCase {
   }
 
   async deleteCase() {
-    const urlMatch = this.page.url().match(SAK_REGEX);
+    const loggedInCasePath = LOGGED_IN_SAK_REGEX.test(this.page.url());
+
+    if (loggedInCasePath) {
+      await this.#deleteLoggedInCase();
+    } else {
+      await this.#deleteLoggedOutCase();
+    }
+  }
+
+  async #deleteLoggedOutCase() {
+    const loggedInCasePath = LOGGED_IN_SAK_REGEX.test(this.page.url());
+
+    if (loggedInCasePath) {
+      throw new Error('Expected to be on a logged-out case, but URL indicates a logged-in case');
+    }
+
+    if (await checkLoggedIn(this.page)) {
+      throw new Error('Expected to be logged out when deleting case, but was logged in');
+    }
+
+    await this.#clickDeleteCase();
+    await this.page.waitForURL('https://www.ansatt.dev.nav.no/klage', { timeout: 30_000 });
+  }
+
+  async #deleteLoggedInCase() {
+    const urlMatch = this.page.url().match(LOGGED_IN_SAK_REGEX);
 
     if (urlMatch === null) {
       throw new Error('Could not find case UUID');
@@ -139,6 +164,12 @@ export class KlangCase {
       (request) => request.url().endsWith(`/klanker/${uuid}`) && request.method() === 'DELETE',
     );
 
+    await this.#clickDeleteCase();
+    await finishedRequest(requestPromise);
+    await this.page.waitForURL('https://www.ansatt.dev.nav.no/klage', { timeout: 30_000 });
+  }
+
+  async #clickDeleteCase() {
     if (this.#state.type === Type.Klage) {
       await this.page.getByTitle('Slett klagen og returner til hovedsiden').click();
     } else if (this.#state.type === Type.Anke) {
@@ -148,8 +179,6 @@ export class KlangCase {
     }
 
     await this.page.getByTitle('Bekreft sletting').click();
-    await finishedRequest(requestPromise);
-    await this.page.waitForURL('https://login.microsoftonline.com/**', { timeout: 30_000 });
   }
 
   async #ensureNewLoggedInCase() {
@@ -159,7 +188,7 @@ export class KlangCase {
     });
 
     await this.#createLoggedInCase(params);
-    await this.deleteCase();
+    await this.#deleteLoggedInCase();
     await this.#createLoggedInCase(params);
   }
 
