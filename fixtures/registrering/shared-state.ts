@@ -38,7 +38,7 @@ export const createSharedState = (): SharedState => ({
 });
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
-export const SAK_REGEX = new RegExp(`http(?:s?)://(?:.+)/sak/(${UUID.source})`);
+export const LOGGED_IN_SAK_REGEX = new RegExp(`http(?:s?)://(?:.+)/sak/(${UUID.source})`);
 
 interface DeepLink {
   saksnummer?: string | null;
