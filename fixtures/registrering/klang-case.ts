@@ -57,7 +57,12 @@ export class KlangCase {
     }
   }
 
-  async createCase(type: Type, ytelse: Innsendingsytelse, saksnummer: string | null = null, ka: boolean | null = null) {
+  async createLoggedOutCase(
+    type: Type,
+    ytelse: Innsendingsytelse,
+    saksnummer: string | null = null,
+    ka: boolean | null = null,
+  ) {
     this.#state.ytelse = ytelse;
     this.#state.type = type;
     this.#state.internalSaksnummer = saksnummer;

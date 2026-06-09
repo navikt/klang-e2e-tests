@@ -19,7 +19,7 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
   CASES.forEach(({ type, ytelse }) => {
     test(type, async ({ klangCase }) => {
       await test.step('Create case', async () => {
-        await klangCase.createCase(type, ytelse, '6969');
+        await klangCase.createLoggedOutCase(type, ytelse, '6969');
       });
 
       await test.step('Begrunnelse', async () => {
@@ -56,7 +56,7 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
         test.slow(); // Navigation retries may be needed under dev server load
 
         await test.step('Create case', async () => {
-          await klangCase.createCase(type, ytelse, '1st_saksnummer', null);
+          await klangCase.createLoggedOutCase(type, ytelse, '1st_saksnummer', null);
         });
 
         await test.step('Begrunnelse (initial deep link)', async () => {
@@ -96,7 +96,7 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
         test.slow(); // This test does a full IdP login + multiple navigations
 
         await test.step('Create case', async () => {
-          await klangCase.createCase(type, ytelse, 'initial_saksnummer', true);
+          await klangCase.createLoggedOutCase(type, ytelse, 'initial_saksnummer', true);
         });
 
         await test.step('Begrunnelse (uinnlogget)', async () => {

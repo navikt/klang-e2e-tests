@@ -17,7 +17,7 @@ test.describe('Uinnlogget', () => {
   CASES.forEach(({ type, ytelse }) => {
     test(type, async ({ klangCase }) => {
       await test.step('Create case', async () => {
-        await klangCase.createCase(type, ytelse);
+        await klangCase.createLoggedOutCase(type, ytelse);
       });
 
       await test.step('Begrunnelse', async () => {
@@ -55,7 +55,7 @@ test.describe('Uinnlogget', () => {
         test.slow(); // Full IdP login flow
 
         await test.step('Create case', async () => {
-          await klangCase.createCase(type, ytelse);
+          await klangCase.createLoggedOutCase(type, ytelse);
         });
 
         await test.step('Begrunnelse (uinnlogget)', async () => {
