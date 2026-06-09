@@ -66,7 +66,7 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
         });
 
         await test.step('Begrunnelse (new deep link)', async () => {
-          await klangCase.setDeepLinkParams('new_saksnummer', true);
+          await klangCase.setDeepLinkParams('2nd_saksnummer', true);
           await klangCase.begrunnelse.verify();
           await klangCase.begrunnelse.insertIdNumber(TEST_USER.id);
           await klangCase.begrunnelse.insertFirstName('Vedtaksuenig');
