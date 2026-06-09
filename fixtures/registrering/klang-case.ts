@@ -118,7 +118,8 @@ export class KlangCase {
     this.#state.firstName = TEST_USER.firstName;
     this.#state.lastName = TEST_USER.lastName;
 
-    await this.begrunnelse.verify();
+    await this.begrunnelse.verifyPersonalInfo();
+    await this.begrunnelse.verifySaksnummer();
   }
 
   async deleteCase() {

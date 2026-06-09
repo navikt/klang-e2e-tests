@@ -137,9 +137,9 @@ export class BegrunnelsePage {
   }
 
   async verify() {
-    await this.#verifyPersonalInfo();
+    await this.verifyPersonalInfo();
 
-    await this.#verifySaksnummer();
+    await this.verifySaksnummer();
 
     if (this.state.type === Type.Klage || this.state.type === Type.Klageettersendelse) {
       expect(await this.page.getByLabel('Vedtaksdato (valgfri)').inputValue()).toBe(this.state.vedtaksdato);
@@ -180,7 +180,7 @@ export class BegrunnelsePage {
     }
   }
 
-  async #verifySaksnummer() {
+  async verifySaksnummer() {
     if (this.state.internalSaksnummer !== null) {
       const section = this.page.locator('section').filter({ hasText: 'Saksnummer' });
 
@@ -205,7 +205,7 @@ export class BegrunnelsePage {
     }
   }
 
-  async #verifyPersonalInfo() {
+  async verifyPersonalInfo() {
     const isLoggedIn = await checkLoggedIn(this.page);
 
     if (isLoggedIn) {
