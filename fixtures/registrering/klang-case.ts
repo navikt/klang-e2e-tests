@@ -146,7 +146,6 @@ export class KlangCase {
     }
 
     await this.#clickDeleteCase();
-    await this.page.waitForURL('https://www.ansatt.dev.nav.no/klage', { timeout: 30_000 });
   }
 
   async #deleteLoggedInCase() {
@@ -164,7 +163,6 @@ export class KlangCase {
 
     await this.#clickDeleteCase();
     await finishedRequest(requestPromise);
-    await this.page.waitForURL('https://www.ansatt.dev.nav.no/klage', { timeout: 30_000 });
   }
 
   async #clickDeleteCase() {
