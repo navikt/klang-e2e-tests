@@ -15,6 +15,10 @@ on:
         required: true
         default: false
         type: boolean
+    secrets:
+      READER_TOKEN:
+        description: "Token for @navikt NPM registry (@navikt/nav-dekoratoren-moduler)"
+        required: true
   push:
     branches:
       - main
@@ -30,6 +34,9 @@ jobs:
       image: ${{ steps.image-info.outputs.image }}
       version: ${{ steps.image-tag.outputs.sha }}
     runs-on: ubuntu-latest
+    env:
+      BUN_AUTH_TOKEN: ${{ secrets.READER_TOKEN }}
+      XDG_CONFIG_HOME: ${{ github.workspace }}      
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -38,12 +45,15 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+          registries: |
+            @navikt:https://npm.pkg.github.com/|$BUN_AUTH_TOKEN
+
+      - name: Rename bunfig to global config name
+        run: mv bunfig.toml .bunfig.toml
 
       - name: Install dependencies
         shell: bash
         run: bun install --frozen-lockfile --ignore-scripts
-        env:
-          READER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Typecheck
         run: bun typecheck
