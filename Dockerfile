@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.61.0-noble
+FROM mcr.microsoft.com/playwright:v1.62.1-noble
 
 ENV NODE_ENV=test
 ENV FORCE_COLOR=0
