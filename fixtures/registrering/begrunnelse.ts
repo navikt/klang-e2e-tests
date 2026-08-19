@@ -125,7 +125,7 @@ export class BegrunnelsePage {
     await this.#deleteAllVedlegg();
 
     await this.page
-      .locator('[id="file-upload-input"]')
+      .locator('input[type="file"]') // Hidden element
       .setInputFiles([
         path.join(TESTDATA_DIR, 'dummy.pdf'),
         path.join(TESTDATA_DIR, 'logo.png'),
