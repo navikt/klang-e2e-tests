@@ -65,7 +65,7 @@ runs:
       uses: nais/deploy/actions/deploy@v2
       env:
         CLUSTER: dev-gcp
-        VAR: jobid=${{ steps.uuid.outputs.uuid }},image=${{ steps.image.outputs.image }},version=${{ steps.image-tag.outputs.tag }},github_actor=${{ github.actor }},github_repository=${{ github.repository }}
+        VAR: jobid=${{ steps.uuid.outputs.uuid }},image=${{ steps.image.outputs.image }},version=${{ steps.image-tag.outputs.tag }},github_actor=${{ github.actor }},github_repository=${{ github.repository }},github_ref_name=${{ github.head_ref || github.ref_name }}
         TEAM: klage
         RESOURCE: nais/e2e-job.yaml
 
