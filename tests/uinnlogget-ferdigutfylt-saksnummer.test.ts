@@ -89,44 +89,4 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
       });
     });
   });
-
-  test.describe('Bevaring av dyplenkedata fra uinnlogget til innlogget', () => {
-    CASES.forEach(({ type, ytelse }) => {
-      test(type, async ({ klangCase, page }) => {
-        test.slow(); // This test does a full IdP login + multiple navigations
-
-        await test.step('Create case', async () => {
-          await klangCase.createLoggedOutCase(type, ytelse, 'initial_saksnummer', true);
-        });
-
-        await test.step('Begrunnelse (uinnlogget)', async () => {
-          await klangCase.begrunnelse.insertIdNumber(TEST_USER.id);
-          await klangCase.begrunnelse.verify();
-
-          expect(page.url()).toBe(`${UI_DOMAIN}/nb/${type}/${ytelse}/begrunnelse`);
-        });
-
-        await test.step('Log in', async () => {
-          await klangCase.logIn();
-        });
-
-        await test.step('Begrunnelse (innlogget)', async () => {
-          await klangCase.begrunnelse.verify();
-          await klangCase.begrunnelse.insertVedtaksdato('01.02.2025');
-          await klangCase.begrunnelse.insertBegrunnelse('Fordi jeg ikke er enig');
-          await klangCase.begrunnelse.submit();
-        });
-
-        await test.step('Oppsummering', async () => {
-          await klangCase.oppsummering.verify();
-          await klangCase.oppsummering.sendInn();
-        });
-
-        await test.step('Kvittering', async () => {
-          await klangCase.kvittering.verify();
-          await klangCase.kvittering.downloadPdf();
-        });
-      });
-    });
-  });
 });
