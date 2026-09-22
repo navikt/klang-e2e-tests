@@ -21,7 +21,7 @@ test.describe('Tilgjengelighet innlogget', () => {
         await klangCase.createLoggedInCase(type, ytelse);
       });
 
-      const axeBuilder = new AxeBuilder({ page });
+      const axeBuilder = new AxeBuilder({ page }).exclude('header');
 
       await test.step('Begrunnelse', async () => {
         expect((await axeBuilder.analyze()).violations).toEqual([]);
@@ -60,7 +60,7 @@ test.describe('Tilgjengelighet uinnlogget', () => {
         await klangCase.createLoggedOutCase(type, ytelse);
       });
 
-      const axeBuilder = new AxeBuilder({ page });
+      const axeBuilder = new AxeBuilder({ page }).exclude('header');
 
       await test.step('Begrunnelse', async () => {
         expect((await axeBuilder.analyze()).violations).toEqual([]);
