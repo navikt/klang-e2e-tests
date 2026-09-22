@@ -26,7 +26,7 @@ export class KvitteringPage {
 
     const link = this.page.getByText(this.#pdfLinkText);
 
-    await link.waitFor({ state: 'visible' });
+    await link.waitFor({ state: 'visible', timeout: 25_000 });
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
