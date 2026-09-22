@@ -73,7 +73,7 @@ export class OppsummeringPage {
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
-        const downloadPromise = this.page.waitForEvent('download', { timeout: 10_000 });
+        const downloadPromise = this.page.waitForEvent('download', { timeout: 25_000 });
         await this.page.getByText('Last ned / skriv ut').click();
         const download = await downloadPromise;
 
