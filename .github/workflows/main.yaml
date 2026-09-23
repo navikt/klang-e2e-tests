@@ -32,10 +32,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: latest
 
@@ -64,7 +64,7 @@ jobs:
           fi
 
       - name: Build and publish image
-        uses: nais/docker-build-push@v0
+        uses: nais/docker-build-push@423a915c9b72edf2ba848b88171ccb0489e2a40a # v0
         id: docker-build-push
         with:
           team: klage # required
@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Generate UUID
         id: uuid
@@ -96,7 +96,7 @@ jobs:
         run: echo "uuid=$(uuidgen)" >> $GITHUB_OUTPUT
 
       - name: Run E2E tests
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@9850be311389ca754d9a9f2280615419d738c891 # v3
         env:
           CLUSTER: dev-gcp
           VAR: jobid=${{ steps.uuid.outputs.uuid }},image=${{ needs.build.outputs.image }},version=${{ needs.build.outputs.version }},github_actor=${{ github.actor }},github_repository=${{ github.repository }},github_ref_name=${{ github.head_ref || github.ref_name }}
@@ -104,7 +104,7 @@ jobs:
           RESOURCE: nais/e2e-job.yaml
 
       - name: Check E2E job status
-        uses: navikt/klage-job-status/action@main
+        uses: navikt/klage-job-status/action@37ae56a7c48a6c573115d29f38cd4fe3aa7ed1d2 # main
         with:
           api_key: ${{ secrets.STATUS_API_KEY }}
           job_id: ${{ steps.uuid.outputs.uuid }}
