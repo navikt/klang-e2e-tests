@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import { UI_DOMAIN } from '@/config/env';
 import { Innsendingsytelse } from '@/fixtures/innsendingsytelse';
 import { test } from '@/fixtures/registrering/fixture';
-import { Type } from '@/fixtures/registrering/shared-state';
+import { getCasePath, Type } from '@/fixtures/registrering/shared-state';
 import { TEST_USER } from '@/testdata/user';
 
 const CASES = [
@@ -62,7 +62,7 @@ test.describe('Uinnlogget med ferdigutfylt saksnummer', () => {
         await test.step('Begrunnelse (initial deep link)', async () => {
           await klangCase.begrunnelse.verify();
 
-          expect(page.url()).toBe(`${UI_DOMAIN}/nb/${type}/${ytelse}/begrunnelse`);
+          expect(page.url()).toBe(`${UI_DOMAIN}${getCasePath(type, ytelse)}/begrunnelse`);
         });
 
         await test.step('Begrunnelse (new deep link)', async () => {

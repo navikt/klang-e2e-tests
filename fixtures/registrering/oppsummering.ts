@@ -4,7 +4,7 @@ import { UI_DOMAIN } from '@/config/env';
 import { formatId } from '@/fixtures/helpers';
 import { checkLoggedIn } from '@/fixtures/registrering/login';
 import type { SharedState } from '@/fixtures/registrering/shared-state';
-import { Type } from '@/fixtures/registrering/shared-state';
+import { getCasePath, Type } from '@/fixtures/registrering/shared-state';
 import { TEST_USER } from '@/testdata/user';
 
 export class OppsummeringPage {
@@ -83,7 +83,7 @@ export class OppsummeringPage {
           expect(name).toContain(`Nav ${this.state.type} - `);
         }
 
-        await this.page.waitForURL(`${UI_DOMAIN}/nb/${this.state.type}/${this.state.ytelse}/innsending`);
+        await this.page.waitForURL(`${UI_DOMAIN}${getCasePath(this.state.type, this.state.ytelse)}/innsending`);
 
         return;
       } catch {

@@ -7,6 +7,21 @@ export enum Type {
   Ankeettersendelse = 'ettersendelse/anke',
 }
 
+const TYPE_PATH_SEGMENTS: Record<Type, string> = {
+  [Type.Klage]: 'klage',
+  [Type.Anke]: 'anke',
+  [Type.Klageettersendelse]: 'ettersendelse',
+  [Type.Ankeettersendelse]: 'ettersendelse/anke',
+};
+
+export const getCasePath = (type: Type | null, ytelse: Innsendingsytelse | null): string => {
+  if (type === null || ytelse === null) {
+    throw new Error(`Type and ytelse must be set. Type: ${type}, ytelse: ${ytelse}`);
+  }
+
+  return `/nb/${TYPE_PATH_SEGMENTS[type]}/${ytelse}`;
+};
+
 export interface SharedState {
   ytelse: Innsendingsytelse | null;
   type: Type | null;
