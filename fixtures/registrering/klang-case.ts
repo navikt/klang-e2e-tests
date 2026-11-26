@@ -151,6 +151,19 @@ export class KlangCase {
     await this.begrunnelse.verifySaksnummer();
   }
 
+  /** The ID of the current logged in case, from the URL. */
+  getCaseId(): string {
+    const urlMatch = this.page.url().match(LOGGED_IN_SAK_REGEX);
+
+    if (urlMatch === null) {
+      throw new Error(`Expected to be on a logged-in case, but URL is ${this.page.url()}`);
+    }
+
+    const [, caseId] = urlMatch;
+
+    return caseId;
+  }
+
   async deleteCase() {
     const loggedInCasePath = LOGGED_IN_SAK_REGEX.test(this.page.url());
 

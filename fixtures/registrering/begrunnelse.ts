@@ -11,6 +11,7 @@ const TESTDATA_DIR = path.resolve(import.meta.dirname, '..', '..', 'testdata');
 
 const VEDLEGG_REGEX = /Vedlegg.*/;
 const SLETT_REGEX = /Slett.*/;
+const VEDLEGG_URL_REGEX = /\/api\/klanker\/[^/]+\/vedlegg\/[^/]+$/;
 
 export class BegrunnelsePage {
   constructor(
@@ -134,6 +135,23 @@ export class BegrunnelsePage {
 
     // Wait for all uploads to complete
     await this.#verifyAttachments();
+  }
+
+  /** Deletes a single uploaded attachment. `verify()` expects all uploaded attachments, so do not use it afterwards. */
+  async deleteAttachment(fileName: string) {
+    const item = this.page
+      .locator('li')
+      .filter({ hasText: fileName })
+      .filter({ has: this.page.getByTitle(SLETT_REGEX, { exact: true }) });
+
+    const requestPromise = this.page.waitForRequest(
+      (request) => request.method() === 'DELETE' && VEDLEGG_URL_REGEX.test(request.url()),
+    );
+
+    await item.locator('button').click();
+    await finishedRequest(requestPromise);
+
+    await expect(this.page.getByRole('link', { name: fileName })).toHaveCount(0);
   }
 
   async verify() {

@@ -39,7 +39,7 @@ const testNotFound = ({ path, texts }: NotFoundPath) => {
     expect(response.headers()['content-type']).toContain('text/html');
   });
 
-  test(`${path} viser 404-side med lenke til nav.no/klage`, async ({ page }) => {
+  test(`${path} viser 404-side med knapp til Klage og anke`, async ({ page }) => {
     const response = await page.goto(`${UI_DOMAIN}${path}`);
 
     expect(response?.status()).toBe(404);

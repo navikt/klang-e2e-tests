@@ -11,6 +11,9 @@ const LOGIN_REQUIRED_PATHS = [
   `/nb/sak/${SAK_ID}/begrunnelse`,
   `/nn/sak/${SAK_ID}/oppsummering`,
   `/en/sak/${SAK_ID}/kvittering`,
+  `/nb/sak/${SAK_ID}/vedlegg/${SAK_ID}`,
+  `/nn/sak/${SAK_ID}/pdf`,
+  `/en/sak/${SAK_ID}/pdf/innsending`,
   `/nb/sak/${SAK_ID}/begrunnelse?saksnummer=1337&ka`,
 ];
 
