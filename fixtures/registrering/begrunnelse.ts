@@ -5,7 +5,7 @@ import { UI_DOMAIN } from '@/config/env';
 import { clearIfNotEmpty, finishedRequest, formatId } from '@/fixtures/helpers';
 import { checkLoggedIn } from '@/fixtures/registrering/login';
 import type { SharedState } from '@/fixtures/registrering/shared-state';
-import { Type } from '@/fixtures/registrering/shared-state';
+import { getCasePath, Type } from '@/fixtures/registrering/shared-state';
 
 const TESTDATA_DIR = path.resolve(import.meta.dirname, '..', '..', 'testdata');
 
@@ -231,7 +231,7 @@ export class BegrunnelsePage {
     const isLoggedIn = await checkLoggedIn(this.page);
     const url = isLoggedIn
       ? `${UI_DOMAIN}/nb/sak/**/oppsummering`
-      : `${UI_DOMAIN}/nb/${this.state.type}/${this.state.ytelse}/oppsummering`;
+      : `${UI_DOMAIN}${getCasePath(this.state.type, this.state.ytelse)}/oppsummering`;
 
     await this.page.waitForURL(url);
   }

@@ -9,6 +9,7 @@ import { checkLoggedIn, logIn } from '@/fixtures/registrering/login';
 import { OppsummeringPage } from '@/fixtures/registrering/oppsummering';
 import {
   createSharedState,
+  getCasePath,
   LOGGED_IN_SAK_REGEX,
   type SharedState,
   Type,
@@ -49,10 +50,9 @@ export class KlangCase {
       ka: harMottattBrev,
     });
 
-    await this.#navigateAndWaitForAppRender(
-      `${UI_DOMAIN}/nb/${this.#state.type}/${this.#state.ytelse}?${params}`,
-      `${UI_DOMAIN}/nb/${this.#state.type}/${this.#state.ytelse}/begrunnelse`,
-    );
+    const casePath = getCasePath(this.#state.type, this.#state.ytelse);
+
+    await this.#navigateAndWaitForAppRender(`${UI_DOMAIN}${casePath}?${params}`, `${UI_DOMAIN}${casePath}/begrunnelse`);
   }
 
   async createLoggedOutCase(
@@ -68,8 +68,10 @@ export class KlangCase {
 
     const params = toQueryParams({ saksnummer, ka });
 
-    await this.page.goto(`${UI_DOMAIN}/nb/${type}/${ytelse}?${params}`);
-    await this.page.waitForURL(`${UI_DOMAIN}/nb/${type}/${ytelse}/begrunnelse`);
+    const casePath = getCasePath(type, ytelse);
+
+    await this.page.goto(`${UI_DOMAIN}${casePath}?${params}`);
+    await this.page.waitForURL(`${UI_DOMAIN}${casePath}/begrunnelse`);
   }
 
   async createLoggedInCase(
@@ -190,7 +192,7 @@ export class KlangCase {
 
   async #createLoggedInCase(params: string) {
     await this.#navigateAndWaitForAppRender(
-      `${UI_DOMAIN}/nb/${this.#state.type}/${this.#state.ytelse}?${params}`,
+      `${UI_DOMAIN}${getCasePath(this.#state.type, this.#state.ytelse)}?${params}`,
       `${UI_DOMAIN}/nb/sak/**/begrunnelse`,
     );
   }
