@@ -13,14 +13,14 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@axe-core/playwright": "4.13.0",
+    "@axe-core/playwright": "4.14.0",
     "@navikt/klage-e2e-reporters": "2.1.2",
-    "@playwright/test": "1.63.0"
+    "@playwright/test": "1.65.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
-    "@types/node": "24.19.1",
-    "dotenv": "18.0.5",
+    "@biomejs/biome": "2.6.8",
+    "@types/node": "26.6.6",
+    "dotenv": "18.0.10",
     "typescript": "7.0.2"
   }
 }

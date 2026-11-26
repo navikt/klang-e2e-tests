@@ -1,31 +1,31 @@
-name: 'E2E'
-description: 'Run E2E tests'
+name: "E2E"
+description: "Run E2E tests"
 
 inputs:
   status_api_key:
-    description: 'API key to read job status'
+    description: "API key to read job status"
     required: true
   nais_management_project_id:
-    description: 'Project ID for nais/logins'
+    description: "Project ID for nais/logins"
     required: false
   nais_workload_identity_provider:
-    description: 'Identity provider for nais/login'
+    description: "Identity provider for nais/login"
     required: false
   e2e_tag:
-    description: 'Git ref for E2E image'
+    description: "Git ref for E2E image"
     required: false
-    default: 'main'
+    default: "main"
 
 branding:
-  icon: 'shield'
-  color: 'green'
+  icon: "shield"
+  color: "green"
 
 outputs:
   image:
-    description: 'E2E image'
+    description: "E2E image"
     value: ${{ steps.image.outputs.image }}
   status:
-    description: 'E2E job status'
+    description: "E2E job status"
     value: ${{ steps.status.outputs.status }}
 
 runs:

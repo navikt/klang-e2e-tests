@@ -4,14 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       run-tests:
-        description: 'Run after build?'
+        description: "Run after build?"
         required: true
         default: true
         type: boolean
   workflow_call:
     inputs:
       run-tests:
-        description: 'Run after build?'
+        description: "Run after build?"
         required: true
         default: false
         type: boolean

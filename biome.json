@@ -102,6 +102,6 @@
     "assist": { "enabled": true }
   },
   "files": {
-    "includes": ["**", "!**/test-results", "!**/state.json"]
+    "includes": ["**", "!**/test-results", "!**/state.json", "!nais/**/*.yaml"]
   }
 }
