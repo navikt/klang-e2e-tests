@@ -10,6 +10,7 @@ import { OppsummeringPage } from '@/fixtures/registrering/oppsummering';
 import {
   createSharedState,
   getCasePath,
+  getLegacyKlageettersendelsePath,
   LOGGED_IN_SAK_REGEX,
   type SharedState,
   Type,
@@ -23,6 +24,7 @@ export class KlangCase {
   readonly kvittering: KvitteringPage;
 
   #state: SharedState;
+  #useLegacyPath = false;
 
   constructor(
     private page: Page,
@@ -52,7 +54,30 @@ export class KlangCase {
 
     const casePath = getCasePath(this.#state.type, this.#state.ytelse);
 
-    await this.#navigateAndWaitForAppRender(`${UI_DOMAIN}${casePath}?${params}`, `${UI_DOMAIN}${casePath}/begrunnelse`);
+    await this.#navigateAndWaitForAppRender(
+      `${UI_DOMAIN}${this.#getEntryPath()}?${params}`,
+      `${UI_DOMAIN}${casePath}/begrunnelse`,
+    );
+  }
+
+  /** Creates a logged out klageettersendelse case by navigating to the legacy `/ettersendelse/klage` path. */
+  async createLoggedOutLegacyKlageettersendelseCase(
+    ytelse: Innsendingsytelse,
+    saksnummer: string | null = null,
+    ka: boolean | null = null,
+  ) {
+    this.#useLegacyPath = true;
+    await this.createLoggedOutCase(Type.Klageettersendelse, ytelse, saksnummer, ka);
+  }
+
+  /** Creates a logged in klageettersendelse case by navigating to the legacy `/ettersendelse/klage` path. */
+  async createLoggedInLegacyKlageettersendelseCase(
+    ytelse: Innsendingsytelse,
+    saksnummer: string | null = null,
+    harMottattBrev: boolean | null = null,
+  ) {
+    this.#useLegacyPath = true;
+    await this.createLoggedInCase(Type.Klageettersendelse, ytelse, saksnummer, harMottattBrev);
   }
 
   async createLoggedOutCase(
@@ -70,7 +95,7 @@ export class KlangCase {
 
     const casePath = getCasePath(type, ytelse);
 
-    await this.page.goto(`${UI_DOMAIN}${casePath}?${params}`);
+    await this.page.goto(`${UI_DOMAIN}${this.#getEntryPath()}?${params}`);
     await this.page.waitForURL(`${UI_DOMAIN}${casePath}/begrunnelse`);
   }
 
@@ -192,9 +217,22 @@ export class KlangCase {
 
   async #createLoggedInCase(params: string) {
     await this.#navigateAndWaitForAppRender(
-      `${UI_DOMAIN}${getCasePath(this.#state.type, this.#state.ytelse)}?${params}`,
+      `${UI_DOMAIN}${this.#getEntryPath()}?${params}`,
       `${UI_DOMAIN}/nb/sak/**/begrunnelse`,
     );
+  }
+
+  /** The path used to enter the case. Either the canonical case path or the legacy klageettersendelse path. */
+  #getEntryPath(): string {
+    if (!this.#useLegacyPath) {
+      return getCasePath(this.#state.type, this.#state.ytelse);
+    }
+
+    if (this.#state.type !== Type.Klageettersendelse || this.#state.ytelse === null) {
+      throw new Error(`Legacy path is only supported for ${Type.Klageettersendelse} with ytelse set.`);
+    }
+
+    return getLegacyKlageettersendelsePath(this.#state.ytelse);
   }
 
   async #navigateAndWaitForAppRender(gotoUrl: string, expectedUrlPattern: string) {

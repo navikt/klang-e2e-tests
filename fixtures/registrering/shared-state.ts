@@ -22,6 +22,10 @@ export const getCasePath = (type: Type | null, ytelse: Innsendingsytelse | null)
   return `/nb/${TYPE_PATH_SEGMENTS[type]}/${ytelse}`;
 };
 
+/** Legacy klageettersendelse path. The app redirects it to the path from `getCasePath()`. */
+export const getLegacyKlageettersendelsePath = (ytelse: Innsendingsytelse): string =>
+  `/nb/ettersendelse/klage/${ytelse}`;
+
 export interface SharedState {
   ytelse: Innsendingsytelse | null;
   type: Type | null;
