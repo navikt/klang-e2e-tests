@@ -1,8 +1,9 @@
 import type { BrowserContext, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
+import { getCasePdfPath, Language, openCaseFileInNewTab, verifyCaseFileLink } from '@/fixtures/case-files';
 import { checkLoggedIn } from '@/fixtures/registrering/login';
 import type { SharedState } from '@/fixtures/registrering/shared-state';
-import { Type } from '@/fixtures/registrering/shared-state';
+import { LOGGED_IN_SAK_REGEX, Type } from '@/fixtures/registrering/shared-state';
 
 export class KvitteringPage {
   constructor(
@@ -21,41 +22,39 @@ export class KvitteringPage {
     }
   }
 
+  /** Opens the case PDF from the logged in kvittering. It is served inline in a new tab by the server route. */
   async downloadPdf() {
     const MAX_ATTEMPTS = 3;
 
-    const link = this.page.getByText(this.#pdfLinkText);
+    const link = this.page.getByRole('link', { name: this.#pdfLinkText });
 
     await link.waitFor({ state: 'visible', timeout: 25_000 });
+    await verifyCaseFileLink(link, getCasePdfPath(Language.NB, this.#getCaseId()));
 
+    // The journalført PDF may not be available right away.
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
-        const pagePromise = this.context.waitForEvent('page', { timeout: 10_000 });
-        const downloadPromise = this.page.waitForEvent('download', { timeout: 10_000 });
-
-        // Suppress unhandled rejections from the losing promise before racing
-        pagePromise.catch(() => undefined);
-        downloadPromise.catch(() => undefined);
-
-        await link.click();
-
-        const result = await Promise.race([
-          pagePromise.then((page) => ({ type: 'page' as const, page })),
-          downloadPromise.then((download) => ({ type: 'download' as const, download })),
-        ]);
-
-        if (result.type === 'page') {
-          await result.page.waitForLoadState('load', { timeout: 10_000 });
-          await result.page.close();
-        }
+        await openCaseFileInNewTab(this.page, this.context, link);
 
         return;
-      } catch {
+      } catch (error) {
         if (attempt === MAX_ATTEMPTS) {
-          throw new Error(`PDF download failed after ${MAX_ATTEMPTS} attempts`);
+          throw new Error(`Opening the PDF failed after ${MAX_ATTEMPTS} attempts`, { cause: error });
         }
       }
     }
+  }
+
+  #getCaseId(): string {
+    const urlMatch = this.page.url().match(LOGGED_IN_SAK_REGEX);
+
+    if (urlMatch === null) {
+      throw new Error(`Expected to be on a logged-in case, but URL is ${this.page.url()}`);
+    }
+
+    const [, caseId] = urlMatch;
+
+    return caseId;
   }
 
   async #verifyAuthenticatedKvittering() {

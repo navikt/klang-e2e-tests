@@ -1,10 +1,11 @@
-import type { Page } from '@playwright/test';
+import type { BrowserContext, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 import { UI_DOMAIN } from '@/config/env';
+import { getCaseInnsendingPdfPath, Language, openCaseFileInNewTab, verifyCaseFileLink } from '@/fixtures/case-files';
 import { formatId } from '@/fixtures/helpers';
 import { checkLoggedIn } from '@/fixtures/registrering/login';
 import type { SharedState } from '@/fixtures/registrering/shared-state';
-import { getCasePath, Type } from '@/fixtures/registrering/shared-state';
+import { getCasePath, LOGGED_IN_SAK_REGEX, Type } from '@/fixtures/registrering/shared-state';
 import { TEST_USER } from '@/testdata/user';
 
 export class OppsummeringPage {
@@ -68,6 +69,19 @@ export class OppsummeringPage {
     await this.page.waitForURL(`${UI_DOMAIN}/nb/sak/**/kvittering`);
   }
 
+  /**
+   * Opens the PDF for sending in by post from a logged in case with uploaded attachments.
+   * It is served inline in a new tab by the server route, while the app navigates to the innsending page.
+   */
+  async openInnsendingPdf(context: BrowserContext, caseId: string) {
+    // Aksel buttons rendered as links have the button role.
+    const link = this.page.getByRole('button', { name: 'Last ned hvis du heller ønsker å sende i posten' });
+
+    await verifyCaseFileLink(link, getCaseInnsendingPdfPath(Language.NB, caseId));
+    await openCaseFileInNewTab(this.page, context, link);
+    await this.page.waitForURL(INNSENDING_URL_REGEX);
+  }
+
   async download() {
     const MAX_ATTEMPTS = 3;
 
@@ -94,3 +108,5 @@ export class OppsummeringPage {
     }
   }
 }
+
+const INNSENDING_URL_REGEX = new RegExp(`${LOGGED_IN_SAK_REGEX.source}/innsending$`);
